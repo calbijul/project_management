@@ -260,7 +260,7 @@ const TaskManager: React.FC = () => {
           ))
         )}
       </ul>
-    </div>
+    </div>  
   );
 };
 
