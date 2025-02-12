@@ -15,6 +15,8 @@ const TaskManager: React.FC = () => {
   const [showButtons, setShowButtons] = useState<{ [key: number]: boolean }>({});
   const [showAddTaskForm, setShowAddTaskForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<number | null>(null); 
 
   useEffect(() => {
     axios.get('http://localhost:5000/tasks')
@@ -42,9 +44,9 @@ const TaskManager: React.FC = () => {
 
     axios.post('http://localhost:5000/tasks', newTask)
       .then(response => {
-        setTasks([response.data, ...tasks]); // Add new task at the top
+        setTasks([response.data, ...tasks]); 
         setNewTask({ title: '', description: '', status: 'To Do' });
-        setShowAddTaskForm(false); // Hide form after adding a task
+        setShowAddTaskForm(false); 
       })
       .catch(error => console.error('Error adding task:', error));
   };
@@ -60,10 +62,16 @@ const TaskManager: React.FC = () => {
       .catch(error => console.error('Error updating task:', error));
   };
 
-  const deleteTask = (id: number) => {
-    axios.delete(`http://localhost:5000/tasks/${id}`)
-      .then(() => setTasks(tasks.filter(task => task.id !== id)))
-      .catch(error => console.error('Error deleting task:', error));
+  const deleteTask = () => {
+    if (taskToDelete !== null) {
+      axios.delete(`http://localhost:5000/tasks/${taskToDelete}`)
+        .then(() => {
+          setTasks(tasks.filter(task => task.id !== taskToDelete));
+          setShowDeleteModal(false); 
+          setTaskToDelete(null); 
+        })
+        .catch(error => console.error('Error deleting task:', error));
+    }
   };
 
   const toggleButtons = (id: number) => {
@@ -94,21 +102,31 @@ const TaskManager: React.FC = () => {
 
       {showAddTaskForm && (
         <div className="space-y-4 mb-6">
-          <input
-            type="text"
-            placeholder="Title"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={newTask.title}
-            onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-          />
-          <textarea
-            placeholder="Description"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={newTask.description}
-            onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-          />
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-          <div className="flex space-x-3">
+        <input
+          type="text"
+          placeholder="Title"
+          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!newTask.title && error ? 'border-red-500' : 'border-gray-300'}`}
+          value={newTask.title}
+          onChange={(e) => {
+            setNewTask({ ...newTask, title: e.target.value });
+            if (e.target.value) {
+              setError('');
+            }
+          }}
+        />
+        <textarea
+          placeholder="Description"
+          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${!newTask.description && error ? 'border-red-500' : 'border-gray-300'}`}
+          value={newTask.description}
+          onChange={(e) => {
+            setNewTask({ ...newTask, description: e.target.value });
+            if (e.target.value) {
+              setError('');
+            }
+          }}
+        />
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+        <div className="flex space-x-3">
             <button
               onClick={addTask}
               className="flex-1 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
@@ -121,6 +139,29 @@ const TaskManager: React.FC = () => {
             >
               Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+
+      {showDeleteModal && (
+        <div className="fixed inset-0  flex items-center justify-center backdrop-brightness-50 bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl w-1/5 ">
+            <h3 className="text-xl font-semibold mb-4">Delete this task?</h3>
+            <div className="flex justify-between space-x-4">
+              <button
+                onClick={deleteTask}
+                className="py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+              >
+                Yes, Delete
+              </button>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="py-2 px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -154,7 +195,10 @@ const TaskManager: React.FC = () => {
                   </button>
                 )}
                 <button
-                  onClick={() => deleteTask(task.id)}
+                  onClick={() => {
+                    setTaskToDelete(task.id); 
+                    setShowDeleteModal(true); 
+                  }}
                   className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
                 >
                   Delete
@@ -164,7 +208,6 @@ const TaskManager: React.FC = () => {
           ))
         )}
       </ul>
-
 
       <h2 className="text-2xl font-semibold mb-4">Completed Tasks</h2>
       <ul className="space-y-4">
@@ -202,7 +245,10 @@ const TaskManager: React.FC = () => {
                       </button>
                     )}
                     <button
-                      onClick={() => deleteTask(task.id)}
+                      onClick={() => {
+                        setTaskToDelete(task.id); 
+                        setShowDeleteModal(true); 
+                      }}
                       className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
                     >
                       Delete
