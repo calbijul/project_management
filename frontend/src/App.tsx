@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaEdit } from 'react-icons/fa'; // Importing edit icon from react-icons
+import { FaEdit } from 'react-icons/fa';
 
 interface Task {
   id: number;
@@ -12,10 +12,9 @@ interface Task {
 const TaskManager: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState({ title: '', description: '', status: 'To Do' });
-  
-  // State to track whether buttons are visible for each task
   const [showButtons, setShowButtons] = useState<{ [key: number]: boolean }>({});
-  const [showAddTaskForm, setShowAddTaskForm] = useState(false);  // New state to control form visibility
+  const [showAddTaskForm, setShowAddTaskForm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     axios.get('http://localhost:5000/tasks')
@@ -23,12 +22,29 @@ const TaskManager: React.FC = () => {
       .catch(error => console.error('Error fetching tasks:', error));
   }, []);
 
+  const validateTask = () => {
+    if (!newTask.title.trim()) {
+      setError('Title is required');
+      return false;
+    }
+    if (!newTask.description.trim()) {
+      setError('Description is required');
+      return false;
+    }
+    setError(null); 
+    return true;
+  };
+
   const addTask = () => {
+    if (!validateTask()) {
+      return;
+    }
+
     axios.post('http://localhost:5000/tasks', newTask)
       .then(response => {
         setTasks([response.data, ...tasks]); // Add new task at the top
         setNewTask({ title: '', description: '', status: 'To Do' });
-        setShowAddTaskForm(false);  // Hide the form after adding a task
+        setShowAddTaskForm(false); // Hide form after adding a task
       })
       .catch(error => console.error('Error adding task:', error));
   };
@@ -53,7 +69,7 @@ const TaskManager: React.FC = () => {
   const toggleButtons = (id: number) => {
     setShowButtons((prevState) => ({
       ...prevState,
-      [id]: !prevState[id],  // Toggle the state for the clicked task
+      [id]: !prevState[id],
     }));
   };
 
@@ -68,14 +84,14 @@ const TaskManager: React.FC = () => {
         )}
         {!showAddTaskForm && (
           <button
-            onClick={() => setShowAddTaskForm(true)} 
+            onClick={() => setShowAddTaskForm(true)}
             className="py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
           >
             Create Task
           </button>
         )}
       </div>
-    
+
       {showAddTaskForm && (
         <div className="space-y-4 mb-6">
           <input
@@ -91,7 +107,7 @@ const TaskManager: React.FC = () => {
             value={newTask.description}
             onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
           />
-        
+          {error && <p className="text-red-500 text-sm">{error}</p>}
           <div className="flex space-x-3">
             <button
               onClick={addTask}
@@ -100,7 +116,7 @@ const TaskManager: React.FC = () => {
               Add Task
             </button>
             <button
-              onClick={() => setShowAddTaskForm(false)} 
+              onClick={() => setShowAddTaskForm(false)}
               className="w-1/4 py-2 bg-red-600 text-white rounded-lg hover:bg-gray-600 transition"
             >
               Cancel
@@ -109,17 +125,18 @@ const TaskManager: React.FC = () => {
         </div>
       )}
 
-      {/* Active Tasks - only visible if the Add Task Form is not open */}
-      {!showAddTaskForm && (
-        <ul className="space-y-4 mb-6">
-          {activeTasks.map((task) => (
+      <ul className="space-y-4 mb-6">
+        {activeTasks.length === 0 ? (
+          <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
+            <p className="text-xl font-semibold text-gray-500">No Active Tasks</p>
+          </div>
+        ) : (
+          activeTasks.map((task) => (
             <li key={task.id} className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
               <h2 className="text-xl font-semibold">{task.title}</h2>
               <p className="text-gray-700">{task.description}</p>
               <p className="mt-2 text-sm text-gray-500">Status: {task.status}</p>
-
               <div className="mt-4 flex space-x-3">
-                {/* Only show "Ongoing" button if the task status is not "Ongoing" */}
                 {task.status !== 'Ongoing' && (
                   <button
                     onClick={() => updateTaskStatus(task.id, 'Ongoing')}
@@ -128,7 +145,6 @@ const TaskManager: React.FC = () => {
                     Ongoing
                   </button>
                 )}
-                {/* Only show "Complete" button if the task status is not "Complete" */}
                 {task.status !== 'Complete' && (
                   <button
                     onClick={() => updateTaskStatus(task.id, 'Complete')}
@@ -145,58 +161,58 @@ const TaskManager: React.FC = () => {
                 </button>
               </div>
             </li>
-          ))}
-        </ul>
-      )}
+          ))
+        )}
+      </ul>
 
- 
+
       <h2 className="text-2xl font-semibold mb-4">Completed Tasks</h2>
       <ul className="space-y-4">
-        {completedTasks.map((task) => (
-          <li key={task.id} className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-            <h2 className="text-xl font-semibold">{task.title}</h2>
-            <p className="text-gray-700">{task.description}</p>
-            <p className="mt-2 text-sm text-gray-500">Status: {task.status}</p>
-
-          
-            <div className="flex justify-between items-center mt-4">
-              <FaEdit
-                className="text-blue-500 cursor-pointer"
-                onClick={() => toggleButtons(task.id)}  // Show buttons when clicked
-              />
-
-              {/* Buttons for completing, ongoing, and deleting tasks */}
-              {showButtons[task.id] && (
-                <div className="flex space-x-3">
-                  {/* Only show "Ongoing" button if the task status is not "Ongoing" */}
-                  {task.status !== 'Ongoing' && (
+        {completedTasks.length === 0 ? (
+          <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
+            <p className="text-xl font-semibold text-gray-500">No Completed Tasks</p>
+          </div>
+        ) : (
+          completedTasks.map((task) => (
+            <li key={task.id} className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
+              <h2 className="text-xl font-semibold">{task.title}</h2>
+              <p className="text-gray-700">{task.description}</p>
+              <p className="mt-2 text-sm text-gray-500">Status: {task.status}</p>
+              <div className="flex justify-between items-center mt-4">
+                <FaEdit
+                  className="text-blue-500 cursor-pointer"
+                  onClick={() => toggleButtons(task.id)}
+                />
+                {showButtons[task.id] && (
+                  <div className="flex space-x-3">
+                    {task.status !== 'Ongoing' && (
+                      <button
+                        onClick={() => updateTaskStatus(task.id, 'Ongoing')}
+                        className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
+                      >
+                        Ongoing
+                      </button>
+                    )}
+                    {task.status !== 'Complete' && (
+                      <button
+                        onClick={() => updateTaskStatus(task.id, 'Complete')}
+                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                      >
+                        Complete
+                      </button>
+                    )}
                     <button
-                      onClick={() => updateTaskStatus(task.id, 'Ongoing')}
-                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
+                      onClick={() => deleteTask(task.id)}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
                     >
-                      Ongoing
+                      Delete
                     </button>
-                  )}
-                  {/* Only show "Complete" button if the task status is not "Complete" */}
-                  {task.status !== 'Complete' && (
-                    <button
-                      onClick={() => updateTaskStatus(task.id, 'Complete')}
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
-                    >
-                      Complete
-                    </button>
-                  )}
-                  <button
-                    onClick={() => deleteTask(task.id)}
-                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
-            </div>
-          </li>
-        ))}
+                  </div>
+                )}
+              </div>
+            </li>
+          ))
+        )}
       </ul>
     </div>
   );
