@@ -21,5 +21,8 @@
   "description": "",
   "devDependencies": {
     "concurrently": "^9.1.2"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1"
   }
 }
