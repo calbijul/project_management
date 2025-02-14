@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { FaCheck, FaEdit, FaTrash } from 'react-icons/fa'; 
-
+import { FaCheck, FaEdit, FaTrash } from 'react-icons/fa';
 import { BiLoaderCircle } from 'react-icons/bi';
 import clsx from 'clsx';
-
 
 interface Task {
   id: number;
@@ -126,6 +124,8 @@ const TaskManager: React.FC = () => {
   };
 
   const activeTasks = tasks.filter(task => task.status !== 'Complete');
+  const toDoTasks = activeTasks.filter(task => task.status === 'To Do');
+  const ongoingTasks = activeTasks.filter(task => task.status === 'Ongoing');
   const completedTasks = tasks.filter(task => task.status === 'Complete');
 
   return (
@@ -239,58 +239,105 @@ const TaskManager: React.FC = () => {
             <p className="text-xl font-semibold text-gray-500">No Active Tasks</p>
           </div>
         ) : (
-          activeTasks.map((task) => (
-            <li
-              key={task.id}
-              className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white cursor-pointer"
-              onDoubleClick={() => startEditing(task)}
-            >
-              <h2 className="text-xl font-semibold break-words">{task.title}</h2>
-              <p className="text-gray-700 break-words mt-2">{task.description}</p>
-              <p className={clsx('mt-2 text-sm', {
-  'text-green-500': task.status === 'Complete',
-  'text-yellow-500': task.status === 'Ongoing',
-  'text-gray-500': task.status !== 'Complete' && task.status !== 'To Do',
-})}>
-  Status: {task.status}
-</p>
-              <div className="mt-4 flex space-x-3"> 
-                {task.status !== 'Ongoing' && (
-                  <button
-                    onClick={() => updateTaskStatus(task.id, 'Ongoing')}
-                    className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
-                  >
-                    <BiLoaderCircle />
-                  </button>
-                )}
-                {task.status === 'Ongoing' && (
-                  <button
-                    onClick={() => updateTaskStatus(task.id, 'Complete')}
-                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
-                  >
-                    <FaCheck />
-                  </button>
-                )}
-                {task.status === 'Complete' && (
-                  <button
-                    onClick={() => updateTaskStatus(task.id, 'To Do')}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-                  >
-                    To Do
-                  </button>
-                )}
-                <button
-                  onClick={() => {
-                    setTaskToDelete(task.id);
-                    setShowDeleteModal(true);
-                  }}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-                >
-                  <FaTrash />
-                </button>
+          <>
+            <h3 className="text-xl font-semibold">To Do</h3>
+            {toDoTasks.length === 0 ? (
+              <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
+                <p className="text-gray-500">No tasks to do</p>
               </div>
-            </li>
-          ))
+            ) : (
+              toDoTasks.map((task) => (
+                <li
+                  key={task.id}
+                  className={clsx(
+                    'border p-4 rounded-lg shadow-sm cursor-pointer',
+                    {
+                      'border-gray-200 bg-white': task.status === 'To Do',
+                      'border-yellow-500 bg-yellow-100': task.status === 'Ongoing',
+                      'border-green-500 bg-green-100': task.status === 'Complete',
+                    }
+                  )}
+                  onDoubleClick={() => startEditing(task)}
+                >
+                  <h2 className="text-xl font-semibold break-words">{task.title}</h2>
+                  <p className="text-gray-700 break-words mt-2">{task.description}</p>
+                  <p className={clsx('mt-2 text-sm', {
+                    'text-green-500': task.status === 'Complete',
+                    'text-yellow-500': task.status === 'Ongoing',
+                    'text-gray-500': task.status !== 'Complete' && task.status !== 'To Do',
+                  })}>
+                    Status: {task.status}
+                  </p>
+                  <div className="mt-4 flex space-x-3">
+                    <button
+                      onClick={() => updateTaskStatus(task.id, 'Ongoing')}
+                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
+                    >
+                      <BiLoaderCircle />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTaskToDelete(task.id);
+                        setShowDeleteModal(true);
+                      }}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                </li>
+              ))
+            )}
+
+            <h3 className="text-xl font-semibold mt-6">Ongoing</h3>
+            {ongoingTasks.length === 0 ? (
+              <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
+                <p className="text-gray-500">No ongoing tasks</p>
+              </div>
+            ) : (
+              ongoingTasks.map((task) => (
+                <li
+                  key={task.id}
+                  className={clsx(
+                    'border p-4 rounded-lg shadow-sm cursor-pointer',
+                    {
+                      'border-gray-200 bg-white': task.status === 'To Do',
+                      'border-yellow-500 bg-yellow-100': task.status === 'Ongoing',
+                      'border-green-500 bg-green-100': task.status === 'Complete',
+                    }
+                  )}
+                  onDoubleClick={() => startEditing(task)}
+                >
+                  <h2 className="text-xl font-semibold break-words">{task.title}</h2>
+                  <p className="text-gray-700 break-words mt-2">{task.description}</p>
+                  <p className={clsx('mt-2 text-sm', {
+                    'text-green-500': task.status === 'Complete',
+                    'text-yellow-500': task.status === 'Ongoing',
+                    'text-gray-500': task.status !== 'Complete' && task.status !== 'To Do',
+                  })}>
+                    Status: {task.status}
+                  </p>
+                  <div className="mt-4 flex space-x-3">
+                    <button
+                      onClick={() => updateTaskStatus(task.id, 'Complete')}
+                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                    >
+                      <FaCheck />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setTaskToDelete(task.id);
+                        setShowDeleteModal(true);
+                      }}
+                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                    >
+                      <FaTrash />
+                    </button>
+                  </div>
+                </li>
+              ))
+            )}
+          </>
         )}
       </ul>
 
@@ -299,52 +346,59 @@ const TaskManager: React.FC = () => {
         {completedTasks.map((task) => (
           <li
             key={task.id}
-            className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white cursor-pointer"
+            className={clsx(
+              'border p-4 rounded-lg shadow-sm cursor-pointer',
+              {
+                'border-gray-200 bg-white': task.status === 'To Do',
+                'border-yellow-500 bg-yellow-100': task.status === 'Ongoing',
+                'border-green-500 bg-green-100': task.status === 'Complete',
+              }
+            )}
           >
             <h2 className="text-xl font-semibold break-words">{task.title}</h2>
             <p className="text-gray-700 break-words mt-2">{task.description}</p>
             <p className={clsx('mt-2 text-sm', {
-  'text-green-500': task.status === 'Complete',
-  'text-yellow-500': task.status === 'Ongoing',
-  'text-gray-500': task.status !== 'Complete' && task.status !== 'To Do',
-})}>
-  Status: {task.status}
-</p>
+              'text-green-500': task.status === 'Complete',
+              'text-yellow-500': task.status === 'Ongoing',
+              'text-gray-500': task.status !== 'Complete' && task.status !== 'To Do',
+            })}>
+              Status: {task.status}
+            </p>
             <div className="flex justify-between items-center mt-4">
-                <FaEdit
-                  className="text-blue-500 cursor-pointer"
-                  onClick={() => toggleButtons(task.id)}
-                />
-                {showButtons[task.id] && (
-                  <div className="flex space-x-3">
-                    {task.status !== 'Ongoing' && (
-                     <button
-                     onClick={() => updateTaskStatus(task.id, 'Ongoing')}
-                     className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
-                   >
-                      <BiLoaderCircle />
-                   </button>
-                    )}
-                    {task.status !== 'Complete' && (
-                      <button
-                        onClick={() => updateTaskStatus(task.id, 'Complete')}
-                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
-                      >
-                        Complete
-                      </button>
-                    )}
+              <FaEdit
+                className="text-blue-500 cursor-pointer"
+                onClick={() => toggleButtons(task.id)}
+              />
+              {showButtons[task.id] && (
+                <div className="flex space-x-3">
+                  {task.status !== 'Ongoing' && (
                     <button
-                      onClick={() => {
-                        setTaskToDelete(task.id);
-                        setShowDeleteModal(true);
-                      }}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                      onClick={() => updateTaskStatus(task.id, 'Ongoing')}
+                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
                     >
-                      Delete
+                      <BiLoaderCircle />
                     </button>
-                  </div>
-                )}
-              </div>
+                  )}
+                  {task.status !== 'Complete' && (
+                    <button
+                      onClick={() => updateTaskStatus(task.id, 'Complete')}
+                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                    >
+                      Complete
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setTaskToDelete(task.id);
+                      setShowDeleteModal(true);
+                    }}
+                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
           </li>
         ))}
       </ul>
