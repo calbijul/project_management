@@ -5,7 +5,7 @@ import mysql, { OkPacket, RowDataPacket } from 'mysql2';
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: "sqlredirect0110config3000Q-‘",
+  password: "passconfig0110",
   database: 'task_manager',
 });
 

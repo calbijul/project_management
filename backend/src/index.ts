@@ -12,7 +12,7 @@
   const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: "sqlredirect0110config3000Q-‘", 
+    password: "passconfig0110", 
     database: 'task_manager',  
   });
 
