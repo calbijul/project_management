@@ -5,7 +5,7 @@ import mysql, { OkPacket, RowDataPacket } from 'mysql2';
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root',
-  password: "passconfig0110",
+  password: "sqlredirect0110config3000Q-‘",
   database: 'task_manager',
 });
 
@@ -13,7 +13,7 @@ const router = Router();
 
 // Get tasks
 router.get('/tasks', (req: Request, res: Response) => {
-  const query = 'SELECT * FROM tasks ORDER BY created_at DESC'; 
+  const query = 'SELECT * FROM tasks ORDER BY created_at DESC';
   db.query(query, (err, results) => {
     if (err) {
       return res.status(500).json({ message: 'Error fetching tasks' });
@@ -37,7 +37,7 @@ router.post('/tasks', (req: Request, res: Response) => {
       title,
       description,
       status,
-      created_at: new Date().toISOString(), 
+      created_at: new Date().toISOString(),
     });
   });
 });
