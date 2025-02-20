@@ -11,6 +11,7 @@ const db = mysql.createConnection({
 
 const router = Router();
 
+
 // Get tasks
 router.get('/tasks', (req: Request, res: Response) => {
   const query = 'SELECT * FROM tasks ORDER BY created_at DESC';
