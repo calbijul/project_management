@@ -30,6 +30,7 @@ const TaskManager: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showToast, setShowToast] = useState({ message: "", type: "" });
+  const [deletedTask, setDeletedTask] = useState<Task | null>(null);
 
   useEffect(() => {
     axios
@@ -105,6 +106,10 @@ const TaskManager: React.FC = () => {
 
   const deleteTask = () => {
     if (taskToDelete !== null) {
+      const task = tasks.find((t) => t.id === taskToDelete);
+      if (task) {
+        setDeletedTask(task);
+      }
       axios
         .delete(`http://localhost:5000/tasks/${taskToDelete}`)
         .then(() => {
@@ -117,6 +122,21 @@ const TaskManager: React.FC = () => {
         .catch((error) => console.error("Error deleting task:", error));
     }
   };
+
+  const undoDelete = () => {
+    if (deletedTask) {
+      axios
+        .post("http://localhost:5000/tasks", deletedTask)
+        .then((response) => {
+          setTasks((prevTasks) => [response.data, ...prevTasks]);
+          setDeletedTask(null);
+          setShowToast({ message: "Task Restored!", type: "success" });
+          setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
+        })
+        .catch((error) => console.error("Error restoring task:", error));
+    }
+  };
+
 
   const toggleButtons = (id: number) => {
     setShowButtons((prevState) => ({
@@ -523,14 +543,24 @@ const TaskManager: React.FC = () => {
         </div>
       )}
       {showToast.message && (
-        <div
-          className={`toast delay-300 ${
-            showToast.type === "success" ? "toast-success" : "toast-error"
-          }`}
-        >
-          <p>{showToast.message}</p>
-        </div>
-      )}
+  <div
+    className={`toast delay-300 flex items-center ${
+      showToast.type === "success" ? "toast-success" : "toast-error"
+    }`}
+  >
+    <p className="px-2">{showToast.message}</p>
+    {showToast.message === "Deleted Task!" && deletedTask && (
+      <button
+        onClick={undoDelete}
+        className="py-0.5 px-5 bg-orange-200 text-orange-600 rounded-lg hover:bg-orange-200 border border-orange-600 transition"
+      >
+        Undo
+      </button>
+    )}
+  </div>
+)}
+
+
     </div>
   );
 };
