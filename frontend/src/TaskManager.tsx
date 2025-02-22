@@ -88,6 +88,10 @@ const TaskManager: React.FC = () => {
     id: number,
     status: "To Do" | "Ongoing" | "Complete"
   ) => {
+    if(status === "Complete"){
+      setShowToast({ message: "Completed Task!", type: "success" });
+          setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
+    }
     axios
       .put(`http://localhost:5000/tasks/${id}/status`, { status })
       .then(() => {
