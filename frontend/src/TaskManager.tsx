@@ -42,7 +42,11 @@ const TaskManager: React.FC = () => {
         );
         setTasks(sortedTasks);
       })
-      .catch((error) => console.error("Error fetching tasks:", error));
+      // .catch((error) => console.error("Error fetching tasks:", error));
+      .catch((error) => {
+        setShowToast({ message: `Error fetching tasks!: ${error}`, type: "error" });
+        setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
+      });
   }, []);
 
   const validateTask = (task: { title: string; description: string }) => {
@@ -81,7 +85,10 @@ const TaskManager: React.FC = () => {
         setShowToast({ message: "Created Task!", type: "success" });
         setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
       })
-      .catch((error) => console.error("Error adding task:", error));
+      .catch((error) => {
+        setShowToast({ message: `Error adding tasks!: ${error}`, type: "error" });
+        setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
+      });
   };
 
   const updateTaskStatus = (
@@ -105,7 +112,10 @@ const TaskManager: React.FC = () => {
         );
         setTasks(sortedTasks);
       })
-      .catch((error) => console.error("Error updating task:", error));
+      .catch((error) => {
+        setShowToast({ message: `Error updating tasks!: ${error}`, type: "error" });
+        setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
+      });
   };
 
   const deleteTask = () => {
@@ -123,7 +133,10 @@ const TaskManager: React.FC = () => {
           setShowToast({ message: "Deleted Task!", type: "success" });
           setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
         })
-        .catch((error) => console.error("Error deleting task:", error));
+        .catch((error) => {
+          setShowToast({ message: `Error deleting tasks!: ${error}`, type: "error" });
+          setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
+        });
     }
   };
 
@@ -137,7 +150,10 @@ const TaskManager: React.FC = () => {
           setShowToast({ message: "Task Restored!", type: "success" });
           setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
         })
-        .catch((error) => console.error("Error restoring task:", error));
+        .catch((error) => {
+          setShowToast({ message: `Error restoring tasks!: ${error}`, type: "error" });
+          setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
+        });
     }
   };
 
@@ -176,7 +192,10 @@ const TaskManager: React.FC = () => {
           setShowToast({ message: "Updated Task!", type: "success" });
           setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
         })
-        .catch((error) => console.error("Error updating task:", error));
+        .catch((error) => {
+          setShowToast({ message: `Error updating tasks!: ${error}`, type: "error" });
+          setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
+        });
     }
   };
 
