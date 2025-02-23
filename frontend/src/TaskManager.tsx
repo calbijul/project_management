@@ -1,27 +1,20 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { FaCheck, FaEdit, FaTrash } from "react-icons/fa";
-import { BiLoaderCircle } from "react-icons/bi";
-import clsx from "clsx";
+import { Task, ToastType } from "./types";
+import { fetchTasks, createTask, updateTaskStatus, deleteTaskAPI, updateTaskDetails } from "./api";
+import TaskSidebar from "./components/TaskSidebar";
+import TaskList from "./components/TaskList";
+import { AddTaskModal, EditTaskModal, DeleteTaskModal } from "./components/Modals";
+import Toast from "./components/Toast";
 import "./App.css";
-interface Task {
-  id: number;
-  title: string;
-  description: string;
-  status: "To Do" | "Ongoing" | "Complete";
-  createdAt: string;
-}
 
 const TaskManager: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [newTask, setNewTask] = useState({
+  const [newTask, setNewTask] = useState<Omit<Task, "id" | "createdAt">>({
     title: "",
     description: "",
     status: "To Do",
   });
-  const [showButtons, setShowButtons] = useState<{ [key: number]: boolean }>(
-    {}
-  );
+  const [showButtons, setShowButtons] = useState<{ [key: number]: boolean }>({});
   const [showAddTaskForm, setShowAddTaskForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -29,561 +22,295 @@ const TaskManager: React.FC = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showToast, setShowToast] = useState({ message: "", type: "" });
+  const [showToast, setShowToast] = useState<ToastType>({ message: "", type: "success" });
   const [deletedTask, setDeletedTask] = useState<Task | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<"To Do" | "Ongoing" | "Complete" | null>(null);
 
   useEffect(() => {
-    axios
-      .get("http://localhost:5000/tasks")
-      .then((response) => {
-        const sortedTasks = response.data.sort(
-          (a: Task, b: Task) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setTasks(sortedTasks);
-      })
-      // .catch((error) => console.error("Error fetching tasks:", error));
-      .catch((error) => {
-        setShowToast({ message: `Error fetching tasks!: ${error}`, type: "error" });
-        setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
-      });
+    const loadTasks = async () => {
+      try {
+        const data = await fetchTasks();
+        setTasks(data.sort((a: Task, b: Task) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        ));
+      } catch (error) {
+        handleToast(`Error fetching tasks!: ${error}`, "error");
+      }
+    };
+    loadTasks();
   }, []);
 
   const validateTask = (task: { title: string; description: string }) => {
     if (!task.title.trim() && !task.description.trim()) {
-      setError("Both field are required");
-      setShowToast({ message: "Both field are required!", type: "error" });
-      setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
+      setError("Both fields are required");
+      handleToast("Both fields are required!", "error");
       return false;
     }
     if (!task.title.trim()) {
       setError("Title is required");
-      setShowToast({ message: "Title is required!", type: "error" });
-      setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
+      handleToast("Title is required!", "error");
       return false;
     }
     if (!task.description.trim()) {
       setError("Description is required");
-      setShowToast({ message: "Description is required!", type: "error" });
-      setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
+      handleToast("Description is required!", "error");
       return false;
     }
     setError(null);
     return true;
   };
 
-  const addTask = () => {
-    if (!validateTask(newTask)) {
-      return;
+  const handleToast = (message: string, type: "success" | "error") => {
+    setShowToast({ message, type });
+    setTimeout(() => setShowToast({ message: "", type }), 3000);
+  };
+
+  const handleAddTask = async () => {
+    if (!validateTask(newTask)) return;
+    try {
+      const createdTask = await createTask(newTask);
+      setTasks([createdTask, ...tasks]);
+      setNewTask({ title: "", description: "", status: "To Do" });
+      setShowAddTaskForm(false);
+      handleToast("Created Task!", "success");
+    } catch (error) {
+      handleToast(`Error adding task!: ${error}`, "error");
     }
-    axios
-      .post("http://localhost:5000/tasks", newTask)
-      .then((response) => {
-        setTasks((prevTasks) => [response.data, ...prevTasks]);
-        setNewTask({ title: "", description: "", status: "To Do" });
-        setShowAddTaskForm(false);
-        setShowToast({ message: "Created Task!", type: "success" });
-        setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
-      })
-      .catch((error) => {
-        setShowToast({ message: `Error adding tasks!: ${error}`, type: "error" });
-        setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
+  };
+
+  const handleStatusUpdate = async (id: number, status: Task["status"]) => {
+    try {
+      await updateTaskStatus(id, status);
+      const updatedTasks = tasks.map(task => 
+        task.id === id ? { ...task, status } : task
+      );
+      setTasks(updatedTasks.sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      ));
+      if (status === "Complete") handleToast("Completed Task!", "success");
+    } catch (error) {
+      handleToast(`Error updating status!: ${error}`, "error");
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      const task = tasks.find(t => t.id === id);
+      if (task) setDeletedTask(task);
+      await deleteTaskAPI(id);
+      setTasks(tasks.filter(task => task.id !== id));
+      setShowDeleteModal(false);
+      handleToast("Deleted Task!", "success");
+    } catch (error) {
+      handleToast(`Error deleting task!: ${error}`, "error");
+    }
+  };
+
+  const handleEdit = async () => {
+    if (!editingTask || !validateTask(editingTask)) return;
+    try {
+      await updateTaskDetails(editingTask.id, {
+        title: editingTask.title,
+        description: editingTask.description
       });
-  };
-
-  const updateTaskStatus = (
-    id: number,
-    status: "To Do" | "Ongoing" | "Complete"
-  ) => {
-    if(status === "Complete"){
-      setShowToast({ message: "Completed Task!", type: "success" });
-          setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
-    }
-    axios
-      .put(`http://localhost:5000/tasks/${id}/status`, { status })
-      .then(() => {
-        const updatedTasks = tasks.map((task) =>
-          task.id === id ? { ...task, status } : task
-        );
-
-        const sortedTasks = updatedTasks.sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setTasks(sortedTasks);
-      })
-      .catch((error) => {
-        setShowToast({ message: `Error updating tasks!: ${error}`, type: "error" });
-        setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
-      });
-  };
-
-  const deleteTask = () => {
-    if (taskToDelete !== null) {
-      const task = tasks.find((t) => t.id === taskToDelete);
-      if (task) {
-        setDeletedTask(task);
-      }
-      axios
-        .delete(`http://localhost:5000/tasks/${taskToDelete}`)
-        .then(() => {
-          setTasks(tasks.filter((task) => task.id !== taskToDelete));
-          setShowDeleteModal(false);
-          setTaskToDelete(null);
-          setShowToast({ message: "Deleted Task!", type: "success" });
-          setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
-        })
-        .catch((error) => {
-          setShowToast({ message: `Error deleting tasks!: ${error}`, type: "error" });
-          setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
-        });
+      setTasks(tasks.map(task => 
+        task.id === editingTask.id ? editingTask : task
+      ));
+      setShowEditModal(false);
+      handleToast("Updated Task!", "success");
+    } catch (error) {
+      handleToast(`Error updating task!: ${error}`, "error");
     }
   };
 
-  const undoDelete = () => {
-    if (deletedTask) {
-      axios
-        .post("http://localhost:5000/tasks", deletedTask)
-        .then((response) => {
-          setTasks((prevTasks) => [response.data, ...prevTasks]);
-          setDeletedTask(null);
-          setShowToast({ message: "Task Restored!", type: "success" });
-          setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
-        })
-        .catch((error) => {
-          setShowToast({ message: `Error restoring tasks!: ${error}`, type: "error" });
-          setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
-        });
+  const handleUndoDelete = async () => {
+    if (!deletedTask) return;
+    try {
+      const restoredTask = await createTask(deletedTask);
+      setTasks([restoredTask, ...tasks]);
+      setDeletedTask(null);
+      handleToast("Task Restored!", "success");
+    } catch (error) {
+      handleToast(`Error restoring task!: ${error}`, "error");
     }
   };
 
-
-  const toggleButtons = (id: number) => {
-    setShowButtons((prevState) => ({
-      ...prevState,
-      [id]: !prevState[id],
-    }));
-  };
-
-  const startEditing = (task: Task) => {
-    setEditingTask(task);
-    setShowEditModal(true);
-  };
-
-  const cancelEditing = () => {
-    setEditingTask(null);
-    setShowEditModal(false);
-  };
-
-  const saveEditedTask = () => {
-    if (editingTask && validateTask(editingTask)) {
-      axios
-        .put(`http://localhost:5000/tasks/${editingTask.id}/edit`, {
-          title: editingTask.title,
-          description: editingTask.description,
-        })
-        .then(() => {
-          const updatedTasks = tasks.map((task) =>
-            task.id === editingTask.id ? editingTask : task
-          );
-          setTasks(updatedTasks);
-          setEditingTask(null);
-          setShowEditModal(false);
-          setShowToast({ message: "Updated Task!", type: "success" });
-          setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
-        })
-        .catch((error) => {
-          setShowToast({ message: `Error updating tasks!: ${error}`, type: "error" });
-          setTimeout(() => setShowToast({ message: "", type: "" }), 3000);
-        });
-    }
-  };
-
-  const filteredTasks = tasks.filter(
-    (task) =>
-      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredTasks = tasks.filter(task =>
+    task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    task.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const activeTasks = filteredTasks.filter(
-    (task) => task.status !== "Complete"
+  const toDoTasks = filteredTasks.filter(task => 
+    task.status === "To Do" && (selectedStatus === null || selectedStatus === "To Do")
   );
-  const toDoTasks = activeTasks.filter((task) => task.status === "To Do");
-  const ongoingTasks = activeTasks.filter((task) => task.status === "Ongoing");
-  const completedTasks = filteredTasks.filter(
-    (task) => task.status === "Complete"
+  const ongoingTasks = filteredTasks.filter(task => 
+    task.status === "Ongoing" && (selectedStatus === null || selectedStatus === "Ongoing")
+  );
+  const completedTasks = filteredTasks.filter(task => 
+    task.status === "Complete" && (selectedStatus === null || selectedStatus === "Complete")
   );
 
   return (
-    <div className="max-w-3xl mx-auto p-6 mt-11">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">
-          {showAddTaskForm ? "Active Tasks" : "Active Tasks"}
-        </h2>
+    <div className="flex">
+      <TaskSidebar
+        selectedStatus={selectedStatus}
+        setSelectedStatus={setSelectedStatus}
+      />
 
-        <input
-          type="text"
-          placeholder=" Search tasks..."
-          className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-
-        <button
-          onClick={() => setShowAddTaskForm(!showAddTaskForm)}
-          className="py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-        >
-          {showAddTaskForm ? "Create Task" : "Create Task"}
-        </button>
-      </div>
-
-      {showAddTaskForm && (
-        <div className="fixed inset-0 flex items-center justify-center backdrop-brightness-50 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-1/3">
-            <h3 className="text-xl font-semibold mb-4">Add Task</h3>
+      <div className="flex-1">
+        <div className=" main-content  max-w-3xl mx-auto p-6 pt-16">
+          <div className=" flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold">Task Manager</h2>
             <input
               type="text"
-              placeholder="Title"
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 ${
-                !newTask.title && error ? "border-red-500" : "border-gray-300"
-              }`}
-              value={newTask.title}
-              onChange={(e) => {
-                setNewTask({ ...newTask, title: e.target.value });
-                if (e.target.value) {
-                  setError("");
-                }
-              }}
+              placeholder="Search tasks..."
+              className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <textarea
-              placeholder="Description"
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 ${
-                !newTask.description && error
-                  ? "border-red-500"
-                  : "border-gray-300"
-              }`}
-              value={newTask.description}
-              onChange={(e) => {
-                setNewTask({ ...newTask, description: e.target.value });
-                if (e.target.value) {
-                  setError("");
-                }
-              }}
-            />
-            {/* {error && <p className="text-red-500 text-sm mb-4">{error}</p>} */}
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowAddTaskForm(false)}
-                className="py-2 px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={addTask}
-                className="py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showEditModal && editingTask && (
-        <div className="fixed inset-0 flex items-center justify-center backdrop-brightness-50 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-1/3">
-            <h3 className="text-xl font-semibold mb-4">Edit Task</h3>
-            <input
-              type="text"
-              placeholder="Title"
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 ${
-                !editingTask.title && error
-                  ? "border-red-500"
-                  : "border-gray-300"
-              }`}
-              value={editingTask.title}
-              onChange={(e) => {
-                setEditingTask({ ...editingTask, title: e.target.value });
-                if (e.target.value) {
-                  setError("");
-                }
-              }}
-            />
-            <textarea
-              placeholder="Description"
-              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 ${
-                !editingTask.description && error
-                  ? "border-red-500"
-                  : "border-gray-300"
-              }`}
-              value={editingTask.description}
-              onChange={(e) => {
-                setEditingTask({ ...editingTask, description: e.target.value });
-                if (e.target.value) {
-                  setError("");
-                }
-              }}
-            />
-            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={cancelEditing}
-                className="py-2 px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={saveEditedTask}
-                className="py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <ul className="space-y-4 mb-6">
-        {activeTasks.length === 0 ? (
-          <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-            <p className="text-xl font-semibold text-gray-500">
-              No Active Tasks
-            </p>
-          </div>
-        ) : (
-          <>
-            <h3 className="text-xl font-semibold">To Do</h3>
-            {toDoTasks.length === 0 ? (
-              <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-                <p className="text-gray-500">No tasks to do</p>
-              </div>
-            ) : (
-              toDoTasks.map((task) => (
-                <li
-                  key={task.id}
-                  className={clsx(
-                    "border p-4 rounded-lg shadow-sm cursor-pointer",
-                    {
-                      "border-gray-200 bg-white": task.status === "To Do",
-                      "border-yellow-500 ": task.status === "Ongoing",
-                      "border-green-500 ": task.status === "Complete",
-                    }
-                  )}
-                  onDoubleClick={() => startEditing(task)}
-                >
-                  <h2 className="text-xl font-semibold break-words">
-                    {task.title}
-                  </h2>
-                  <p className="text-gray-700 break-words mt-2 overflow-auto text-ellipsis ">
-                    {task.description}
-                  </p>
-                  <p
-                    className={clsx("mt-2 text-sm", {
-                      "text-green-500": task.status === "Complete",
-                      "text-yellow-500": task.status === "Ongoing",
-                      "text-gray-500":
-                        task.status !== "Complete" && task.status !== "To Do",
-                    })}
-                  >
-                    Status: {task.status}
-                  </p>
-                  <div className="mt-4 flex space-x-3">
-                    <button
-                      onClick={() => updateTaskStatus(task.id, "Ongoing")}
-                      className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
-                    >
-                      <BiLoaderCircle />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setTaskToDelete(task.id);
-                        setShowDeleteModal(true);
-                      }}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                </li>
-              ))
-            )}
-
-            <h3 className="text-xl font-semibold mt-6">Ongoing</h3>
-            {ongoingTasks.length === 0 ? (
-              <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-                <p className="text-gray-500">No ongoing tasks</p>
-              </div>
-            ) : (
-              ongoingTasks.map((task) => (
-                <li
-                  key={task.id}
-                  className={clsx(
-                    "border p-4 rounded-lg shadow-sm cursor-pointer",
-                    {
-                      "border-gray-200 bg-white": task.status === "To Do",
-                      "border-yellow-500 ": task.status === "Ongoing",
-                      "border-green-500 ": task.status === "Complete",
-                    }
-                  )}
-                  onDoubleClick={() => startEditing(task)}
-                >
-                  <h2 className="text-xl font-semibold break-words">
-                    {task.title}
-                  </h2>
-                  <p className="text-gray-700 break-words mt-2">
-                    {task.description}
-                  </p>
-                  <p
-                    className={clsx("mt-2 text-sm", {
-                      "text-green-500": task.status === "Complete",
-                      "text-yellow-500": task.status === "Ongoing",
-                      "text-gray-500":
-                        task.status !== "Complete" && task.status !== "To Do",
-                    })}
-                  >
-                    Status: {task.status}
-                  </p>
-                  <div className="mt-4 flex space-x-3">
-                    <button
-                      onClick={() => updateTaskStatus(task.id, "Complete")}
-                      className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
-                    >
-                      <FaCheck />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setTaskToDelete(task.id);
-                        setShowDeleteModal(true);
-                      }}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                </li>
-              ))
-            )}
-          </>
-        )}
-      </ul>
-
-      <h2 className="text-2xl font-semibold mb-4">Completed Tasks</h2>
-      <ul className="space-y-4">
-        {completedTasks.length === 0 ? (
-          <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white mt-4">
-            <p className="text-xl font-semibold text-gray-500 ">
-              No Completed Tasks
-            </p>
-          </div>
-        ) : (
-          completedTasks.map((task) => (
-            <li
-              key={task.id}
-              className={clsx(
-                "border p-4 rounded-lg shadow-sm cursor-pointer",
-                {
-                  "border-gray-200 bg-white": task.status === "To Do",
-                  "border-yellow-500 ": task.status === "Ongoing",
-                  "border-green-500 ": task.status === "Complete",
-                }
-              )}
+            <button
+              onClick={() => setShowAddTaskForm(true)}
+              className="py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
             >
-              <h2 className="text-xl font-semibold break-words">
-                {task.title}
-              </h2>
-              <p className="text-gray-700 break-words mt-2">
-                {task.description}
-              </p>
-              <p
-                className={clsx("mt-2 text-sm", {
-                  "text-green-500": task.status === "Complete",
-                  "text-yellow-500": task.status === "Ongoing",
-                  "text-gray-500":
-                    task.status !== "Complete" && task.status !== "To Do",
-                })}
-              >
-                Status: {task.status}
-              </p>
-              <div className="flex justify-between items-center mt-4">
-                <FaEdit
-                  className="text-blue-500 cursor-pointer"
-                  onClick={() => toggleButtons(task.id)}
-                />
-                {showButtons[task.id] && (
-                  <div className="flex space-x-3">
-                    {task.status !== "Ongoing" && (
-                      <button
-                        onClick={() => updateTaskStatus(task.id, "Ongoing")}
-                        className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
-                      >
-                        <BiLoaderCircle />
-                      </button>
-                    )}
-                    {task.status !== "Complete" && (
-                      <button
-                        onClick={() => updateTaskStatus(task.id, "Complete")}
-                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
-                      >
-                        Complete
-                      </button>
-                    )}
-                    <button
-                      onClick={() => {
-                        setTaskToDelete(task.id);
-                        setShowDeleteModal(true);
-                      }}
-                      className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                )}
-              </div>
-            </li>
-          ))
-        )}
-      </ul>
-
-      {showDeleteModal && (
-        <div className="fixed inset-0 flex items-center justify-center backdrop-brightness-50 bg-opacity-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl w-1/5">
-            <h3 className="text-xl font-semibold mb-4">Delete this task?</h3>
-            <div className="flex justify-between space-x-4">
-              <button
-                onClick={deleteTask}
-                className="py-2 px-4 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
-              >
-                Yes, Delete
-              </button>
-              <button
-                onClick={() => setShowDeleteModal(false)}
-                className="py-2 px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition"
-              >
-                Cancel
-              </button>
-            </div>
+              Create Task
+            </button>
           </div>
-        </div>
-      )}
-      {showToast.message && (
-  <div
-    className={`toast delay-300 flex items-center ${
-      showToast.type === "success" ? "toast-success" : "toast-error"
-    }`}
-  >
-    <p className="px-2">{showToast.message}</p>
-    {showToast.message === "Deleted Task!" && deletedTask && (
-      <button
-        onClick={undoDelete}
-        className="py-0.5 px-5 bg-orange-200 text-orange-600 rounded-lg hover:bg-orange-200 border border-orange-600 transition"
-      >
-        Undo
-      </button>
+
+          {showAddTaskForm && (
+            <AddTaskModal
+              newTask={newTask}
+              setNewTask={setNewTask}
+              error={error}
+              onClose={() => setShowAddTaskForm(false)}
+              onSave={handleAddTask}
+            />
+          )}
+
+          {showEditModal && (
+            <EditTaskModal
+              editingTask={editingTask}
+              setEditingTask={setEditingTask}
+              error={error}
+              onClose={() => setShowEditModal(false)}
+              onSave={handleEdit}
+            />
+          )}
+
+          {showDeleteModal && (
+            <DeleteTaskModal
+              onConfirm={() => taskToDelete && handleDelete(taskToDelete)}
+              onCancel={() => setShowDeleteModal(false)}
+            />
+          )}
+
+         {/* To Do Section */}
+{(selectedStatus === null || selectedStatus === "To Do") && (
+  <div>
+    <h3 className="text-xl font-semibold mb-4">To Do</h3>
+    {toDoTasks.length === 0 ? (
+      <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
+        <p className="text-gray-500">No tasks to do</p>
+      </div>
+    ) : (
+      <ul className="space-y-4">
+        <TaskList
+          tasks={toDoTasks}
+          onUpdateStatus={handleStatusUpdate}
+          onDelete={(id) => {
+            setTaskToDelete(id);
+            setShowDeleteModal(true);
+          }}
+          onEdit={(task) => {
+            setEditingTask(task);
+            setShowEditModal(true);
+          }}
+          onToggleButtons={(id) => setShowButtons(prev => ({
+            ...prev,
+            [id]: !prev[id]
+          }))}
+          showButtons={showButtons}
+          status="To Do"
+        />
+      </ul>
     )}
   </div>
 )}
 
+{/* Ongoing Section */}
+{(selectedStatus === null || selectedStatus === "Ongoing") && (
+  <div>
+    <h3 className="text-xl font-semibold mb-4">Ongoing</h3>
+    {ongoingTasks.length === 0 ? (
+      <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
+        <p className="text-gray-500">No ongoing tasks</p>
+      </div>
+    ) : (
+      <ul className="space-y-4">
+        <TaskList
+          tasks={ongoingTasks}
+          onUpdateStatus={handleStatusUpdate}
+          onDelete={(id) => {
+            setTaskToDelete(id);
+            setShowDeleteModal(true);
+          }}
+          onEdit={(task) => {
+            setEditingTask(task);
+            setShowEditModal(true);
+          }}
+          onToggleButtons={(id) => setShowButtons(prev => ({
+            ...prev,
+            [id]: !prev[id]
+          }))}
+          showButtons={showButtons}
+          status="Ongoing"
+        />
+      </ul>
+    )}
+  </div>
+)}
 
+{/* Complete Section */}
+{(selectedStatus === null || selectedStatus === "Complete") && (
+  <div>
+    <h2 className="text-2xl font-semibold mb-4">Completed Tasks</h2>
+    {completedTasks.length === 0 ? (
+      <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
+        <p className="text-gray-500">No completed tasks</p>
+      </div>
+    ) : (
+      <ul className="space-y-4">
+        <TaskList
+          tasks={completedTasks}
+          onUpdateStatus={handleStatusUpdate}
+          onDelete={(id) => {
+            setTaskToDelete(id);
+            setShowDeleteModal(true);
+          }}
+          onEdit={(task) => {
+            setEditingTask(task);
+            setShowEditModal(true);
+          }}
+          onToggleButtons={(id) => setShowButtons(prev => ({
+            ...prev,
+            [id]: !prev[id]
+          }))}
+          showButtons={showButtons}
+          status="Complete"
+        />
+      </ul>
+    )}
+  </div>
+)}
+
+          {showToast.message && (
+            <Toast
+              message={showToast.message}
+              type={showToast.type}
+              onUndo={showToast.message === "Deleted Task!" ? handleUndoDelete : undefined}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 };

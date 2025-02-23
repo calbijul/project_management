@@ -1,40 +1,30 @@
-  import express, { Request, Response } from 'express';
-  import mysql from 'mysql2';
-  import cors from 'cors';
-  import taskRoutes from './routes/taskRoutes'; 
+import express from "express";
+import cors from "cors";
+import taskRoutes from "./routes/taskRoutes";
+import pool from "./config/db";
 
-  const app = express();
-  const port = 5000;
+const app = express();
+const port = 5000;
 
-  app.use(cors());
+// Middleware
+app.use(cors());
+app.use(express.json());
 
-  // db connection
-  const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: "passconfig0110", 
-    database: 'task_manager',  
+// Routes
+app.use("/", taskRoutes);
+
+// Test DB connection
+pool
+  .getConnection()
+  .then((connection) => {
+    console.log("Connected to MySQL");
+    connection.release();
+  })
+  .catch((err) => {
+    console.error("Error connecting to MySQL:", err);
   });
 
-  app.use(express.json());
-
-  // Test db connection
-  db.connect((err) => {
-    if (err) {
-      console.error('Error connecting to MySQL:', err);
-      return;
-    }
-    console.log('Connected to MySQL');
-  });
-
-  app.get('/', (req: Request, res: Response) => {
-    res.send('API is running'); 
-  });
-
-  // Use the task routes 
-  app.use(taskRoutes);
-
-  // Start the server
-  app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
-  });
+// Start server
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});
