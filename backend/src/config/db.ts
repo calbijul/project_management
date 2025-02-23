@@ -1,10 +1,29 @@
 import mysql from 'mysql2/promise';
+import 'dotenv/config';
+
+const getConfig = () => {
+  if (process.env.DATABASE_URL) {
+    const parsed = new URL(process.env.DATABASE_URL);
+    return {
+      host: parsed.hostname,
+      user: parsed.username,
+      password: parsed.password,
+      database: parsed.pathname.slice(1),
+      port: Number(parsed.port),
+    };
+  }
+
+  return {
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: Number(process.env.DB_PORT) || 3306,
+  };
+};
 
 const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: "passconfig0110",
-  database: 'task_manager',
+  ...getConfig(),
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
