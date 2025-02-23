@@ -270,7 +270,7 @@ const TaskManager: React.FC = () => {
                 }
               }}
             />
-            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+            {/* {error && <p className="text-red-500 text-sm mb-4">{error}</p>} */}
             <div className="flex justify-end space-x-3">
               <button
                 onClick={() => setShowAddTaskForm(false)}
