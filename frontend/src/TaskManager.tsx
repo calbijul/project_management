@@ -5,7 +5,8 @@ import TaskSidebar from "./components/TaskSidebar";
 import TaskList from "./components/TaskList";
 import { AddTaskModal, EditTaskModal, DeleteTaskModal } from "./components/Modals";
 import Toast from "./components/Toast";
-import "./App.css";
+
+
 
 const TaskManager: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -157,10 +158,13 @@ const TaskManager: React.FC = () => {
         setSelectedStatus={setSelectedStatus}
       />
 
+      
+
       <div className="flex-1">
+      <div>hello</div>
         <div className=" main-content  max-w-3xl mx-auto p-6 pt-16">
           <div className=" flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold">Task Manager</h2>
+            <h2 className="text-2xl font-semibold">Active Tasks</h2>
             <input
               type="text"
               placeholder="Search tasks..."

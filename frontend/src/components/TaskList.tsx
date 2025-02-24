@@ -1,6 +1,5 @@
 import React from "react";
-import { BiLoaderCircle } from "react-icons/bi";
-import { FaCheck, FaTrash, FaEdit } from "react-icons/fa";
+import { FaCheck, FaTrash, FaEdit, FaClock} from "react-icons/fa";
 import clsx from "clsx";
 import { Task } from "../types";
 
@@ -59,7 +58,7 @@ const TaskList: React.FC<TaskListProps> = ({
                   onClick={() => onUpdateStatus(task.id, "Ongoing")}
                   className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition"
                 >
-                  <BiLoaderCircle />
+                  <FaClock />
                 </button>
                 <button
                   onClick={() => onDelete(task.id)}
@@ -79,7 +78,7 @@ const TaskList: React.FC<TaskListProps> = ({
                 "bg-green-500 hover:bg-green-600": status === "Ongoing",
               })}
             >
-              {status === "To Do" ? <BiLoaderCircle /> : <FaCheck />}
+              {status === "To Do" ? <FaClock /> : <FaCheck />}
             </button>
             <button
               onClick={() => onDelete(task.id)}
