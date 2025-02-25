@@ -5,6 +5,7 @@ import TaskSidebar from "./components/TaskSidebar";
 import TaskList from "./components/TaskList";
 import { AddTaskModal, EditTaskModal, DeleteTaskModal } from "./components/Modals";
 import Toast from "./components/Toast";
+import { CheckCircle, ClipboardCheck, Clock } from "lucide-react";
 
 
 
@@ -158,10 +159,9 @@ const TaskManager: React.FC = () => {
         setSelectedStatus={setSelectedStatus}
       />
 
-      
+      {/* <div className=" w-64 min-h-screen p-4 bg-gray-50 border-r border-gray-200 text-amber-600">HELLO</div> */}
 
-      <div className="flex-1">
-      <div>hello</div>
+      <div className="flex-1  min-w-sc">
         <div className=" main-content  max-w-3xl mx-auto p-6 pt-16">
           <div className=" flex justify-between items-center mb-6">
             <h2 className="text-2xl font-semibold">Active Tasks</h2>
@@ -209,10 +209,11 @@ const TaskManager: React.FC = () => {
 
 {(selectedStatus === null || selectedStatus === "To Do") && (
   <div>
-    <h3 className="text-xl font-semibold mb-4">To Do</h3>
+    
+    <h3 className="text-xl font-semibold mb-4"><ClipboardCheck className="inline-block mr-2" />To Do</h3>
     {toDoTasks.length === 0 ? (
       <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-        <p className="text-gray-500">No tasks to do</p>
+        <p className="text-gray-500 ">No tasks to do</p>
       </div>
     ) : (
       <ul className="space-y-4">
@@ -240,8 +241,8 @@ const TaskManager: React.FC = () => {
 )}
 
 {(selectedStatus === null || selectedStatus === "Ongoing") && (
-  <div>
-    <h3 className="text-xl font-semibold mb-4">Ongoing</h3>
+  <div className="pt-3">
+    <h3 className="text-xl font-semibold mb-4"><Clock className="inline-block mr-2" />Ongoing</h3>
     {ongoingTasks.length === 0 ? (
       <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
         <p className="text-gray-500">No ongoing tasks</p>
@@ -272,8 +273,8 @@ const TaskManager: React.FC = () => {
 )}
 
 {(selectedStatus === null || selectedStatus === "Complete") && (
-  <div>
-    <h2 className="text-2xl font-semibold mb-4">Completed Tasks</h2>
+  <div className="pt-3">
+    <h2 className="text-xl font-semibold mb-4"> <CheckCircle className="inline-block mr-2" />Completed Tasks</h2>
     {completedTasks.length === 0 ? (
       <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
         <p className="text-gray-500">No completed tasks</p>

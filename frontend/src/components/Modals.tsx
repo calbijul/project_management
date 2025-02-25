@@ -111,7 +111,7 @@ export const EditTaskModal: React.FC<{
         value={editingTask?.description || ""}
         onChange={(e) => editingTask && setEditingTask({ ...editingTask, description: e.target.value })}
       />
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+      {/* {error && <p className="text-red-500 text-sm mb-4">{error}</p>} */}
       <div className="flex justify-end space-x-3">
         <button
           onClick={onClose}

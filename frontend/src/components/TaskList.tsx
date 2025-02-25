@@ -27,9 +27,9 @@ const TaskList: React.FC<TaskListProps> = ({
       <li
         key={task.id}
         className={clsx(
-          "border p-4 rounded-lg shadow-sm cursor-pointer mb-4",
+          "border p-4 rounded-lg cursor-pointer mb-4",
           {
-            "border-gray-200 bg-white": task.status === "To Do",
+            "border-blue-500 bg-white": task.status === "To Do",
             "border-yellow-500": task.status === "Ongoing",
             "border-green-500": task.status === "Complete",
           }
