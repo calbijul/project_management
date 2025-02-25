@@ -39,7 +39,6 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({ children, onClose }) => (
   </AnimatePresence>
 );
 
-// Update AddTaskModal
 export const AddTaskModal: React.FC<{
   newTask: Omit<Task, "id" | "createdAt">;
   setNewTask: (task: Omit<Task, "id" | "createdAt">) => void;
@@ -85,7 +84,6 @@ export const AddTaskModal: React.FC<{
   </ModalWrapper>
 );
 
-// Update EditTaskModal
 export const EditTaskModal: React.FC<{
   editingTask: Task | null;
   setEditingTask: (task: Task | null) => void;
@@ -132,7 +130,6 @@ export const EditTaskModal: React.FC<{
   </ModalWrapper>
 );
 
-// Update DeleteTaskModal
 export const DeleteTaskModal: React.FC<{
   onConfirm: () => void;
   onCancel: () => void;

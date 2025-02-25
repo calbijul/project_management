@@ -207,7 +207,6 @@ const TaskManager: React.FC = () => {
             />
           )}
 
-         {/* To Do Section */}
 {(selectedStatus === null || selectedStatus === "To Do") && (
   <div>
     <h3 className="text-xl font-semibold mb-4">To Do</h3>
@@ -240,7 +239,6 @@ const TaskManager: React.FC = () => {
   </div>
 )}
 
-{/* Ongoing Section */}
 {(selectedStatus === null || selectedStatus === "Ongoing") && (
   <div>
     <h3 className="text-xl font-semibold mb-4">Ongoing</h3>
@@ -273,7 +271,6 @@ const TaskManager: React.FC = () => {
   </div>
 )}
 
-{/* Complete Section */}
 {(selectedStatus === null || selectedStatus === "Complete") && (
   <div>
     <h2 className="text-2xl font-semibold mb-4">Completed Tasks</h2>
@@ -292,7 +289,7 @@ const TaskManager: React.FC = () => {
           }}
           onEdit={(task) => {
             setEditingTask(task);
-            setShowEditModal(true);
+            setShowEditModal(false);
           }}
           onToggleButtons={(id) => setShowButtons(prev => ({
             ...prev,
