@@ -2,6 +2,7 @@ import React from "react";
 import { Menu } from "lucide-react";
 
 interface MenuButtonProps {
+    className : string ;
   onClick: () => void;
 }
 

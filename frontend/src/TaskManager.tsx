@@ -172,8 +172,12 @@ const TaskManager: React.FC = () => {
           <div className="flex justify-between items-center mb-6">
          
           {!isSidebarOpen && (
-              <MenuButton onClick={handleSidebarToggle} /> 
-            )}
+  <MenuButton
+    className="sticky"
+    onClick={handleSidebarToggle}
+  />
+)}
+
             
             <h2 className="text-2xl font-semibold flex-1 text-center md:text-left">Active Tasks</h2>
             
