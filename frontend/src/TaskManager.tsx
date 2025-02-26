@@ -6,8 +6,7 @@ import TaskList from "./components/TaskList";
 import { AddTaskModal, EditTaskModal, DeleteTaskModal } from "./components/Modals";
 import Toast from "./components/Toast";
 import { CheckCircle, ClipboardCheck, Clock } from "lucide-react";
-
-
+import MenuButton from "./assets/components/menuButton"; 
 
 const TaskManager: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -27,6 +26,7 @@ const TaskManager: React.FC = () => {
   const [showToast, setShowToast] = useState<ToastType>({ message: "", type: "success" });
   const [deletedTask, setDeletedTask] = useState<Task | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<"To Do" | "Ongoing" | "Complete" | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
 
   useEffect(() => {
     const loadTasks = async () => {
@@ -152,33 +152,159 @@ const TaskManager: React.FC = () => {
     task.status === "Complete" && (selectedStatus === null || selectedStatus === "Complete")
   );
 
+  const handleSidebarToggle = () => {
+    setIsSidebarOpen(prev => !prev);
+  };
+
   return (
     <div className="flex">
-      <TaskSidebar
-        selectedStatus={selectedStatus}
-        setSelectedStatus={setSelectedStatus}
-      />
 
-      {/* <div className=" w-64 min-h-screen p-4 bg-gray-50 border-r border-gray-200 text-amber-600">HELLO</div> */}
+<TaskSidebar
+  selectedStatus={selectedStatus}
+  setSelectedStatus={setSelectedStatus}
+  isSidebarOpen={isSidebarOpen}
+  onClose={handleSidebarToggle} 
+/>
 
-      <div className="flex-1  min-w-sc">
-        <div className=" main-content  max-w-3xl mx-auto p-6 pt-16">
-          <div className=" flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold">Active Tasks</h2>
+
+      <div className={`flex-1 min-w-0 ${isSidebarOpen ? 'md' : 'ml-0'}`}>
+        <div className="mx-auto p-4 md:p-16 pt-16">
+          <div className="flex justify-between items-center mb-6">
+         
+          {!isSidebarOpen && (
+              <MenuButton onClick={handleSidebarToggle} /> 
+            )}
+            
+            <h2 className="text-2xl font-semibold flex-1 text-center md:text-left">Active Tasks</h2>
+            
+            <div className="hidden md:flex items-center gap-4 flex-1 justify-end">
+              <input
+                type="text"
+                placeholder="Search tasks..."
+                className="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <button
+                onClick={() => setShowAddTaskForm(true)}
+                className="py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+              >
+                Create Task
+              </button>
+            </div>
+          </div>
+
+          <div className="md:hidden flex flex-col gap-4 mb-6">
             <input
               type="text"
               placeholder="Search tasks..."
-              className="w-1/2 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             <button
               onClick={() => setShowAddTaskForm(true)}
-              className="py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+              className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
             >
               Create Task
             </button>
           </div>
+
+          {(selectedStatus === null || selectedStatus === "To Do") && (
+            <div>
+              <h3 className="text-xl font-semibold mb-4"><ClipboardCheck className="inline-block mr-2" />To Do</h3>
+              {toDoTasks.length === 0 ? (
+                <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
+                  <p className="text-gray-500">No tasks to do</p>
+                </div>
+              ) : (
+                <ul className="space-y-4">
+                  <TaskList
+                    tasks={toDoTasks}
+                    onUpdateStatus={handleStatusUpdate}
+                    onDelete={(id) => {
+                      setTaskToDelete(id);
+                      setShowDeleteModal(true);
+                    }}
+                    onEdit={(task) => {
+                      setEditingTask(task);
+                      setShowEditModal(true);
+                    }}
+                    onToggleButtons={(id) => setShowButtons(prev => ({
+                      ...prev,
+                      [id]: !prev[id]
+                    }))}
+                    showButtons={showButtons}
+                    status="To Do"
+                  />
+                </ul>
+              )}
+            </div>
+          )}
+
+          {(selectedStatus === null || selectedStatus === "Ongoing") && (
+            <div className="pt-3">
+              <h3 className="text-xl font-semibold mb-4"><Clock className="inline-block mr-2" />Ongoing</h3>
+              {ongoingTasks.length === 0 ? (
+                <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
+                  <p className="text-gray-500">No ongoing tasks</p>
+                </div>
+              ) : (
+                <ul className="space-y-4">
+                  <TaskList
+                    tasks={ongoingTasks}
+                    onUpdateStatus={handleStatusUpdate}
+                    onDelete={(id) => {
+                      setTaskToDelete(id);
+                      setShowDeleteModal(true);
+                    }}
+                    onEdit={(task) => {
+                      setEditingTask(task);
+                      setShowEditModal(true);
+                    }}
+                    onToggleButtons={(id) => setShowButtons(prev => ({
+                      ...prev,
+                      [id]: !prev[id]
+                    }))}
+                    showButtons={showButtons}
+                    status="Ongoing"
+                  />
+                </ul>
+              )}
+            </div>
+          )}
+
+          {(selectedStatus === null || selectedStatus === "Complete") && (
+            <div className="pt-3">
+              <h2 className="text-xl font-semibold mb-4"> <CheckCircle className="inline-block mr-2" />Completed Tasks</h2>
+              {completedTasks.length === 0 ? (
+                <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
+                  <p className="text-gray-500">No completed tasks</p>
+                </div>
+              ) : (
+                <ul className="space-y-4">
+                  <TaskList
+                    tasks={completedTasks}
+                    onUpdateStatus={handleStatusUpdate}
+                    onDelete={(id) => {
+                      setTaskToDelete(id);
+                      setShowDeleteModal(true);
+                    }}
+                    onEdit={(task) => {
+                      setEditingTask(task);
+                      setShowEditModal(false);
+                    }}
+                    onToggleButtons={(id) => setShowButtons(prev => ({
+                      ...prev,
+                      [id]: !prev[id]
+                    }))}
+                    showButtons={showButtons}
+                    status="Complete"
+                  />
+                </ul>
+              )}
+            </div>
+          )}
 
           {showAddTaskForm && (
             <AddTaskModal
@@ -206,103 +332,6 @@ const TaskManager: React.FC = () => {
               onCancel={() => setShowDeleteModal(false)}
             />
           )}
-
-{(selectedStatus === null || selectedStatus === "To Do") && (
-  <div>
-    
-    <h3 className="text-xl font-semibold mb-4"><ClipboardCheck className="inline-block mr-2" />To Do</h3>
-    {toDoTasks.length === 0 ? (
-      <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-        <p className="text-gray-500 ">No tasks to do</p>
-      </div>
-    ) : (
-      <ul className="space-y-4">
-        <TaskList
-          tasks={toDoTasks}
-          onUpdateStatus={handleStatusUpdate}
-          onDelete={(id) => {
-            setTaskToDelete(id);
-            setShowDeleteModal(true);
-          }}
-          onEdit={(task) => {
-            setEditingTask(task);
-            setShowEditModal(true);
-          }}
-          onToggleButtons={(id) => setShowButtons(prev => ({
-            ...prev,
-            [id]: !prev[id]
-          }))}
-          showButtons={showButtons}
-          status="To Do"
-        />
-      </ul>
-    )}
-  </div>
-)}
-
-{(selectedStatus === null || selectedStatus === "Ongoing") && (
-  <div className="pt-3">
-    <h3 className="text-xl font-semibold mb-4"><Clock className="inline-block mr-2" />Ongoing</h3>
-    {ongoingTasks.length === 0 ? (
-      <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-        <p className="text-gray-500">No ongoing tasks</p>
-      </div>
-    ) : (
-      <ul className="space-y-4">
-        <TaskList
-          tasks={ongoingTasks}
-          onUpdateStatus={handleStatusUpdate}
-          onDelete={(id) => {
-            setTaskToDelete(id);
-            setShowDeleteModal(true);
-          }}
-          onEdit={(task) => {
-            setEditingTask(task);
-            setShowEditModal(true);
-          }}
-          onToggleButtons={(id) => setShowButtons(prev => ({
-            ...prev,
-            [id]: !prev[id]
-          }))}
-          showButtons={showButtons}
-          status="Ongoing"
-        />
-      </ul>
-    )}
-  </div>
-)}
-
-{(selectedStatus === null || selectedStatus === "Complete") && (
-  <div className="pt-3">
-    <h2 className="text-xl font-semibold mb-4"> <CheckCircle className="inline-block mr-2" />Completed Tasks</h2>
-    {completedTasks.length === 0 ? (
-      <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-        <p className="text-gray-500">No completed tasks</p>
-      </div>
-    ) : (
-      <ul className="space-y-4">
-        <TaskList
-          tasks={completedTasks}
-          onUpdateStatus={handleStatusUpdate}
-          onDelete={(id) => {
-            setTaskToDelete(id);
-            setShowDeleteModal(true);
-          }}
-          onEdit={(task) => {
-            setEditingTask(task);
-            setShowEditModal(false);
-          }}
-          onToggleButtons={(id) => setShowButtons(prev => ({
-            ...prev,
-            [id]: !prev[id]
-          }))}
-          showButtons={showButtons}
-          status="Complete"
-        />
-      </ul>
-    )}
-  </div>
-)}
 
           {showToast.message && (
             <Toast

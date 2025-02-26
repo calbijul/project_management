@@ -23,33 +23,33 @@ body {
     animation: slideInFromTop 0.3s ease-out;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
-  
+
   .toast-success {
     background-color: #d1fae5;
     color: #065f46;
     border: 1px solid #34d399;
   }
-  
+
   .toast-error {
     background-color: #fee2e2;
     color: #991b1b;
     border: 1px solid #f87171;
   }
-  
+
   .side-panel {
     position: fixed;
     left: 0;
     top: 0;
     bottom: 0;
-    width: 16rem; 
-    overflow-y: auto; 
+    overflow-y: auto;
   }
-  
+
   .main-content {
-    margin-left: 24rem; 
-    width: calc(100% - 16rem); 
+ 
+    margin-left: 16rem;
+    /* width: calc(100% - 16rem);  */
   }
-  
+
   @keyframes slideInFromTop {
     from {
       opacity: 0;
@@ -61,4 +61,20 @@ body {
     }
   }
 
-  
+  /* For small screens, hide the sidebar initially */
+  @media (max-width: 1024px) {
+    .side-panel {
+      transform: translateX(100%); /* Off-screen to the right */
+      transition: transform 0.3s ease-out;
+    }
+    
+    .side-panel.open {
+      transform: translateX(0); /* Slide in to its original position */
+    }
+  }
+
+
+
+
+
+

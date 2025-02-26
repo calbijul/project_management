@@ -47,7 +47,7 @@ export const AddTaskModal: React.FC<{
   onSave: () => void;
 }> = ({ newTask, setNewTask, error, onClose, onSave }) => (
   <ModalWrapper onClose={onClose}>
-    <div className="p-6">
+    <div className="p-6 ">
       <h3 className="text-xl font-semibold mb-4">Add Task</h3>
       <input
         type="text"
