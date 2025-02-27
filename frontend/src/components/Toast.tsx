@@ -17,7 +17,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onUndo }) => (
     {onUndo && (
       <button
         onClick={onUndo}
-        className="py-0.5 px-5 bg-orange-200 text-orange-600 rounded-lg hover:bg-orange-200 border border-orange-600 transition"
+        className="py-0.5 px-5 bg-red-200 text-red-600 rounded-lg hover:bg-red-100 border border-red-600 transition"
       >
         Undo
       </button>

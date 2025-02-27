@@ -20,7 +20,7 @@ interface ModalWrapperProps {
 const ModalWrapper: React.FC<ModalWrapperProps> = ({ children, onClose }) => (
   <AnimatePresence>
     <motion.div
-      className="fixed inset-0 bg-black/30 flex items-center justify-center p-4"
+      className="fixed modal inset-0 bg-black/30 flex items-center justify-center p-4"
       onClick={onClose}
       initial="hidden"
       animate="visible"
@@ -135,8 +135,8 @@ export const DeleteTaskModal: React.FC<{
   onCancel: () => void;
 }> = ({ onConfirm, onCancel }) => (
   <ModalWrapper onClose={onCancel}>
-    <div className="p-6">
-      <h3 className="text-xl font-semibold mb-4">Delete this task?</h3>
+    <div className="p-6 bg-red-200 rounded-lg border border-red-600">
+      <h3 className="text-xl font-semibold mb-4 text-red-600">Delete this task?</h3>
       <div className="flex justify-between space-x-4">
         <button
           onClick={onConfirm}

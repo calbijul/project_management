@@ -36,6 +36,10 @@ body {
     border: 1px solid #f87171;
   }
 
+  .modal {
+    z-index: 1000;
+  }
+
   .side-panel {
     position: fixed;
     left: 0;
@@ -45,9 +49,7 @@ body {
   }
 
   .main-content {
- 
     margin-left: 16rem;
-    /* width: calc(100% - 16rem);  */
   }
 
   @keyframes slideInFromTop {
@@ -60,16 +62,14 @@ body {
       transform: translate(-50%, 0);
     }
   }
-
-  /* For small screens, hide the sidebar initially */
   @media (max-width: 1024px) {
     .side-panel {
-      transform: translateX(100%); /* Off-screen to the right */
+      transform: translateX(100%); 
       transition: transform 0.3s ease-out;
     }
     
     .side-panel.open {
-      transform: translateX(0); /* Slide in to its original position */
+      transform: translateX(0); 
     }
   }
 
