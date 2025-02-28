@@ -2,7 +2,8 @@ import { Request, Response } from "express";
 import TaskModel from "../models/taskModel";
 
 const taskController = {
-  getAllTasks: async (req: Request, res: Response) => {
+  
+  getAllTasks: async (req: Request, res: Response): Promise<void> => {
     try {
       const tasks = await TaskModel.getAll();
       res.json(tasks);
@@ -12,14 +13,10 @@ const taskController = {
     }
   },
 
-  createTask: async (req: Request, res: Response) => {
+  createTask: async (req: Request, res: Response): Promise<void> => {
     try {
       const { title, description, status } = req.body;
-      const newTask = await TaskModel.create(
-        title,
-        description,
-        status || "To Do"
-      );
+      const newTask = await TaskModel.create(title, description, status || "To Do");
       res.status(201).json(newTask);
     } catch (error) {
       console.error(error);
@@ -27,10 +24,11 @@ const taskController = {
     }
   },
 
-  updateStatus: async (req: Request, res: Response) => {
+  updateStatus: async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { status } = req.body;
+
     try {
-      const { id } = req.params;
-      const { status } = req.body;
       await TaskModel.updateStatus(Number(id), status);
       res.json({ message: "Status updated successfully" });
     } catch (error) {
@@ -39,10 +37,11 @@ const taskController = {
     }
   },
 
-  updateDetails: async (req: Request, res: Response) => {
+  updateDetails: async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
+    const { title, description } = req.body;
+
     try {
-      const { id } = req.params;
-      const { title, description } = req.body;
       await TaskModel.updateDetails(Number(id), title, description);
       res.json({ message: "Task updated successfully" });
     } catch (error) {
@@ -51,9 +50,9 @@ const taskController = {
     }
   },
 
-  deleteTask: async (req: Request, res: Response) => {
+  deleteTask: async (req: Request, res: Response): Promise<void> => {
+    const { id } = req.params;
     try {
-      const { id } = req.params;
       await TaskModel.delete(Number(id));
       res.json({ message: "Task deleted successfully" });
     } catch (error) {
