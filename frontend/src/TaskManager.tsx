@@ -6,7 +6,7 @@ import TaskList from "./components/TaskList";
 import { AddTaskModal, EditTaskModal, DeleteTaskModal } from "./components/Modals";
 import Toast from "./components/Toast";
 import { CheckCircle, ClipboardCheck, Clock } from "lucide-react";
-import MenuButton from "./assets/components/menuButton"; 
+import MenuButton from "./assets/components/menuButton";
 
 const TaskManager: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -32,11 +32,11 @@ const TaskManager: React.FC = () => {
     const loadTasks = async () => {
       try {
         const data = await fetchTasks();
-        setTasks(data.sort((a: Task, b: Task) => 
+        setTasks(data.sort((a: Task, b: Task) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         ));
       } catch (error) {
-        handleToast(`Error fetching tasks!: ${error}`, "error");
+        handleToast(`Error fetching tasks: ${error}`, "error");
       }
     };
     loadTasks();
@@ -76,22 +76,22 @@ const TaskManager: React.FC = () => {
       setShowAddTaskForm(false);
       handleToast("Created Task!", "success");
     } catch (error) {
-      handleToast(`Error adding task!: ${error}`, "error");
+      handleToast(`Error adding task: ${error}`, "error");
     }
   };
 
   const handleStatusUpdate = async (id: number, status: Task["status"]) => {
     try {
       await updateTaskStatus(id, status);
-      const updatedTasks = tasks.map(task => 
+      const updatedTasks = tasks.map(task =>
         task.id === id ? { ...task, status } : task
       );
-      setTasks(updatedTasks.sort((a, b) => 
+      setTasks(updatedTasks.sort((a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       ));
       if (status === "Complete") handleToast("Completed Task!", "success");
     } catch (error) {
-      handleToast(`Error updating status!: ${error}`, "error");
+      handleToast(`Error updating status: ${error}`, "error");
     }
   };
 
@@ -104,7 +104,7 @@ const TaskManager: React.FC = () => {
       setShowDeleteModal(false);
       handleToast("Deleted Task!", "success");
     } catch (error) {
-      handleToast(`Error deleting task!: ${error}`, "error");
+      handleToast(`Error deleting task: ${error}`, "error");
     }
   };
 
@@ -115,13 +115,13 @@ const TaskManager: React.FC = () => {
         title: editingTask.title,
         description: editingTask.description
       });
-      setTasks(tasks.map(task => 
+      setTasks(tasks.map(task =>
         task.id === editingTask.id ? editingTask : task
       ));
       setShowEditModal(false);
       handleToast("Updated Task!", "success");
     } catch (error) {
-      handleToast(`Error updating task!: ${error}`, "error");
+      handleToast(`Error updating task: ${error}`, "error");
     }
   };
 
@@ -133,7 +133,7 @@ const TaskManager: React.FC = () => {
       setDeletedTask(null);
       handleToast("Task Restored!", "success");
     } catch (error) {
-      handleToast(`Error restoring task!: ${error}`, "error");
+      handleToast(`Error restoring task: ${error}`, "error");
     }
   };
 
@@ -142,13 +142,13 @@ const TaskManager: React.FC = () => {
     task.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const toDoTasks = filteredTasks.filter(task => 
+  const toDoTasks = filteredTasks.filter(task =>
     task.status === "To Do" && (selectedStatus === null || selectedStatus === "To Do")
   );
-  const ongoingTasks = filteredTasks.filter(task => 
+  const ongoingTasks = filteredTasks.filter(task =>
     task.status === "Ongoing" && (selectedStatus === null || selectedStatus === "Ongoing")
   );
-  const completedTasks = filteredTasks.filter(task => 
+  const completedTasks = filteredTasks.filter(task =>
     task.status === "Complete" && (selectedStatus === null || selectedStatus === "Complete")
   );
 
@@ -156,31 +156,25 @@ const TaskManager: React.FC = () => {
     setIsSidebarOpen(prev => !prev);
   };
 
+  const hasActiveTasks = toDoTasks.length > 0 || ongoingTasks.length > 0;
+
   return (
     <div className="flex">
-
-<TaskSidebar
-  selectedStatus={selectedStatus}
-  setSelectedStatus={setSelectedStatus}
-  isSidebarOpen={isSidebarOpen}
-  onClose={handleSidebarToggle} 
-/>
-
-
+      <TaskSidebar
+        selectedStatus={selectedStatus}
+        setSelectedStatus={setSelectedStatus}
+        isSidebarOpen={isSidebarOpen}
+        onClose={handleSidebarToggle}
+      />
       <div className={`flex-1 min-w-0 ${isSidebarOpen ? 'md' : 'ml-0'}`}>
         <div className="mx-auto p-4 md:p-16 pt-16">
           <div className="flex justify-between items-center mb-6">
-         
-          {!isSidebarOpen && (
-  <MenuButton
-    className="sticky"
-    onClick={handleSidebarToggle}
-  />
-)}
+            {!isSidebarOpen && (
+              <MenuButton className="sticky" onClick={handleSidebarToggle} />
+            )}
 
-            
             <h2 className="text-2xl font-semibold flex-1 text-center md:text-left">Active Tasks</h2>
-            
+
             <div className="hidden md:flex items-center gap-4 flex-1 justify-end">
               <input
                 type="text"
@@ -214,67 +208,75 @@ const TaskManager: React.FC = () => {
             </button>
           </div>
 
-          {(selectedStatus === null || selectedStatus === "To Do") && (
-            <div>
-              <h3 className="text-xl font-semibold mb-4"><ClipboardCheck className="inline-block mr-2" />To Do</h3>
-              {toDoTasks.length === 0 ? (
-                <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-                  <p className="text-gray-500">No tasks to do</p>
+          {hasActiveTasks ? (
+            <>
+              {(selectedStatus === null || selectedStatus === "To Do") && (
+                <div>
+                  <h3 className="text-xl font-semibold mb-4"><ClipboardCheck className="inline-block mr-2" />To Do</h3>
+                  {toDoTasks.length === 0 ? (
+                    <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
+                      <p className="text-gray-500">No tasks to do</p>
+                    </div>
+                  ) : (
+                    <ul className="space-y-4">
+                      <TaskList
+                        tasks={toDoTasks}
+                        onUpdateStatus={handleStatusUpdate}
+                        onDelete={(id) => {
+                          setTaskToDelete(id);
+                          setShowDeleteModal(true);
+                        }}
+                        onEdit={(task) => {
+                          setEditingTask(task);
+                          setShowEditModal(true);
+                        }}
+                        onToggleButtons={(id) => setShowButtons(prev => ({
+                          ...prev,
+                          [id]: !prev[id]
+                        }))}
+                        showButtons={showButtons}
+                        status="To Do"
+                      />
+                    </ul>
+                  )}
                 </div>
-              ) : (
-                <ul className="space-y-4">
-                  <TaskList
-                    tasks={toDoTasks}
-                    onUpdateStatus={handleStatusUpdate}
-                    onDelete={(id) => {
-                      setTaskToDelete(id);
-                      setShowDeleteModal(true);
-                    }}
-                    onEdit={(task) => {
-                      setEditingTask(task);
-                      setShowEditModal(true);
-                    }}
-                    onToggleButtons={(id) => setShowButtons(prev => ({
-                      ...prev,
-                      [id]: !prev[id]
-                    }))}
-                    showButtons={showButtons}
-                    status="To Do"
-                  />
-                </ul>
               )}
-            </div>
-          )}
 
-          {(selectedStatus === null || selectedStatus === "Ongoing") && (
-            <div className="pt-3">
-              <h3 className="text-xl font-semibold mb-4"><Clock className="inline-block mr-2" />Ongoing</h3>
-              {ongoingTasks.length === 0 ? (
-                <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-                  <p className="text-gray-500">No ongoing tasks</p>
+              {(selectedStatus === null || selectedStatus === "Ongoing") && (
+                <div className="pt-3">
+                  <h3 className="text-xl font-semibold mb-4"><Clock className="inline-block mr-2" />Ongoing</h3>
+                  {ongoingTasks.length === 0 ? (
+                    <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
+                      <p className="text-gray-500">No ongoing tasks</p>
+                    </div>
+                  ) : (
+                    <ul className="space-y-4">
+                      <TaskList
+                        tasks={ongoingTasks}
+                        onUpdateStatus={handleStatusUpdate}
+                        onDelete={(id) => {
+                          setTaskToDelete(id);
+                          setShowDeleteModal(true);
+                        }}
+                        onEdit={(task) => {
+                          setEditingTask(task);
+                          setShowEditModal(true);
+                        }}
+                        onToggleButtons={(id) => setShowButtons(prev => ({
+                          ...prev,
+                          [id]: !prev[id]
+                        }))}
+                        showButtons={showButtons}
+                        status="Ongoing"
+                      />
+                    </ul>
+                  )}
                 </div>
-              ) : (
-                <ul className="space-y-4">
-                  <TaskList
-                    tasks={ongoingTasks}
-                    onUpdateStatus={handleStatusUpdate}
-                    onDelete={(id) => {
-                      setTaskToDelete(id);
-                      setShowDeleteModal(true);
-                    }}
-                    onEdit={(task) => {
-                      setEditingTask(task);
-                      setShowEditModal(true);
-                    }}
-                    onToggleButtons={(id) => setShowButtons(prev => ({
-                      ...prev,
-                      [id]: !prev[id]
-                    }))}
-                    showButtons={showButtons}
-                    status="Ongoing"
-                  />
-                </ul>
               )}
+            </>
+          ) : (
+            <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
+              <p className="text-gray-500">No active task available</p>
             </div>
           )}
 
