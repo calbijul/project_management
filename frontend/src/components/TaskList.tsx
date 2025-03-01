@@ -24,7 +24,7 @@
   }) => (
     <>
       {tasks.map((task) => (
-        <li
+        <div
           key={task.id}
           className={clsx(
             "border p-4 rounded-lg cursor-pointer mb-4",
@@ -88,7 +88,7 @@
               </button>
             </div>
           )}
-        </li>
+        </div>
       ))}
     </>
   );
