@@ -4,12 +4,14 @@ import { Task } from "../types";
 
 const backdropVariants = {
   visible: { opacity: 1 },
-  hidden: { opacity: 0 }
+  hidden: { opacity: 0 },
+  exit: { opacity: 0 }, 
 };
 
 const modalVariants = {
   hidden: { opacity: 0, scale: 0.95 },
-  visible: { opacity: 1, scale: 1 }
+  visible: { opacity: 1, scale: 1 },
+  exit: { opacity: 0, scale: 0.95 }, 
 };
 
 interface ModalWrapperProps {
@@ -24,14 +26,18 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({ children, onClose }) => (
       onClick={onClose}
       initial="hidden"
       animate="visible"
-      exit="hidden"
+      exit="exit"
       variants={backdropVariants}
+      transition={{ duration: 0.3 }}
     >
       <motion.div
         className="bg-white rounded-lg shadow-xl w-full max-w-lg"
         onClick={(e) => e.stopPropagation()}
         variants={modalVariants}
-        transition={{ duration: 0.2 }}
+        initial="hidden"
+        animate="visible"
+        exit="exit"
+        transition={{ duration: 0.3 }} 
       >
         {children}
       </motion.div>
@@ -47,7 +53,7 @@ export const AddTaskModal: React.FC<{
   onSave: () => void;
 }> = ({ newTask, setNewTask, error, onClose, onSave }) => (
   <ModalWrapper onClose={onClose}>
-    <div className="p-6 ">
+    <div className="p-6">
       <h3 className="text-xl font-semibold mb-4">Add Task</h3>
       <input
         type="text"
@@ -111,7 +117,6 @@ export const EditTaskModal: React.FC<{
         value={editingTask?.description || ""}
         onChange={(e) => editingTask && setEditingTask({ ...editingTask, description: e.target.value })}
       />
-      {/* {error && <p className="text-red-500 text-sm mb-4">{error}</p>} */}
       <div className="flex justify-end space-x-3">
         <button
           onClick={onClose}
