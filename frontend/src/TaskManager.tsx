@@ -284,7 +284,7 @@ const TaskManager: React.FC = () => {
                     }}
                     onEdit={(task) => {
                       setEditingTask(task);
-                      setShowEditModal(true);
+                      setShowEditModal(false);
                     }}
                     onToggleButtons={(id) => setShowButtons(prev => ({
                       ...prev,
@@ -377,7 +377,7 @@ const TaskManager: React.FC = () => {
                       }}
                       onEdit={(task) => {
                         setEditingTask(task);
-                        setShowEditModal(true);
+                        setShowEditModal(false);
                       }}
                       onToggleButtons={(id) => setShowButtons(prev => ({
                         ...prev,
