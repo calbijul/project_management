@@ -84,6 +84,19 @@ const TaskSidebar: React.FC<TaskSidebarProps> = ({
         <CheckCircle className="inline-block mr-2" />
         Complete
       </button>
+      {/* <button
+        onClick={() => setSelectedStatus(selectedStatus === "Complete" ? null : "Complete")}
+        className={clsx(
+          "w-full px-4 py-2 text-left rounded-lg transition-colors",
+          {
+            "bg-purple-500 text-white hover:bg-purple-600": selectedStatus === "Complete",
+            "hover:bg-purple-200": selectedStatus !== "Complete",
+          }
+        )}
+      >
+        <Settings className="inline-block mr-2" />
+        Settings
+      </button> */}
     </div>
   </div>
 );
