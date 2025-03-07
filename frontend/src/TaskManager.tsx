@@ -157,7 +157,7 @@ const TaskManager: React.FC = () => {
   };
 
   return (
-    <div className="flex">
+    <div className="flex ">
       <TaskSidebar
         selectedStatus={selectedStatus}
         setSelectedStatus={setSelectedStatus}
