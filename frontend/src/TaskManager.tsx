@@ -168,10 +168,13 @@ const TaskManager: React.FC = () => {
         <div className="mx-auto p-4 md:p-16 pt-16">
           <div className="flex justify-between items-center mb-6">
             {!isSidebarOpen && (
-              <MenuButton className="sticky" onClick={handleSidebarToggle} />
+              <div className="flex items-center">
+                <MenuButton className="sticky" onClick={handleSidebarToggle} />
+                <p className="font-bold text-2xl ml-2 md:hidden">NAANA</p>
+              </div>
             )}
 
-            <h2 className="text-2xl font-semibold flex-1 text-center md:text-left">Active Tasks</h2>
+            <h2 className="text-2xl font-semibold flex-1 text-center md:text-left hidden md:block">Active Tasks</h2>
 
             <div className="hidden md:flex items-center gap-4 flex-1 justify-end">
               <input
@@ -204,6 +207,7 @@ const TaskManager: React.FC = () => {
             >
               Create Task
             </button>
+            <h2 className="text-2xl font-semibold text-center md:hidden">Active Tasks</h2>
           </div>
 
           {selectedStatus === "To Do" ? (
