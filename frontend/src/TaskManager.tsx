@@ -1,11 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { Task, ToastType } from "./types";
-import { fetchTasks, createTask, updateTaskStatus, deleteTaskAPI, updateTaskDetails } from "./api";
+import {
+  fetchTasks,
+  createTask,
+  updateTaskStatus,
+  deleteTaskAPI,
+  updateTaskDetails,
+} from "./api";
 import TaskSidebar from "./components/TaskSidebar";
 import TaskList from "./components/TaskList";
-import { AddTaskModal, EditTaskModal, DeleteTaskModal } from "./components/Modals";
+import {
+  AddTaskModal,
+  EditTaskModal,
+  DeleteTaskModal,
+} from "./components/Modals";
 import Toast from "./components/Toast";
-import { CheckCircle, ClipboardCheck, Clock } from "lucide-react";
+import {
+  AlarmClockCheck,
+  CheckCircle,
+  ClipboardCheck,
+  Clock,
+} from "lucide-react";
 import MenuButton from "./assets/components/menuButton";
 
 const TaskManager: React.FC = () => {
@@ -15,7 +30,9 @@ const TaskManager: React.FC = () => {
     description: "",
     status: "To Do",
   });
-  const [showButtons, setShowButtons] = useState<{ [key: number]: boolean }>({});
+  const [showButtons, setShowButtons] = useState<{ [key: number]: boolean }>(
+    {}
+  );
   const [showAddTaskForm, setShowAddTaskForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -23,18 +40,26 @@ const TaskManager: React.FC = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showToast, setShowToast] = useState<ToastType>({ message: "", type: "success" });
+  const [showToast, setShowToast] = useState<ToastType>({
+    message: "",
+    type: "success",
+  });
   const [deletedTask, setDeletedTask] = useState<Task | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<"To Do" | "Ongoing" | "Complete" | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<
+    "To Do" | "Ongoing" | "Complete" | null
+  >(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
 
   useEffect(() => {
     const loadTasks = async () => {
       try {
         const data = await fetchTasks();
-        setTasks(data.sort((a: Task, b: Task) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        ));
+        setTasks(
+          data.sort(
+            (a: Task, b: Task) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+        );
       } catch (error) {
         handleToast(`Error fetching tasks: ${error}`, "error");
       }
@@ -83,12 +108,15 @@ const TaskManager: React.FC = () => {
   const handleStatusUpdate = async (id: number, status: Task["status"]) => {
     try {
       await updateTaskStatus(id, status);
-      const updatedTasks = tasks.map(task =>
+      const updatedTasks = tasks.map((task) =>
         task.id === id ? { ...task, status } : task
       );
-      setTasks(updatedTasks.sort((a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      ));
+      setTasks(
+        updatedTasks.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
+      );
       if (status === "Complete") handleToast("Completed Task!", "success");
     } catch (error) {
       handleToast(`Error updating status: ${error}`, "error");
@@ -97,10 +125,10 @@ const TaskManager: React.FC = () => {
 
   const handleDelete = async (id: number) => {
     try {
-      const task = tasks.find(t => t.id === id);
+      const task = tasks.find((t) => t.id === id);
       if (task) setDeletedTask(task);
       await deleteTaskAPI(id);
-      setTasks(tasks.filter(task => task.id !== id));
+      setTasks(tasks.filter((task) => task.id !== id));
       setShowDeleteModal(false);
       handleToast("Deleted Task!", "success");
     } catch (error) {
@@ -113,11 +141,11 @@ const TaskManager: React.FC = () => {
     try {
       await updateTaskDetails(editingTask.id, {
         title: editingTask.title,
-        description: editingTask.description
+        description: editingTask.description,
       });
-      setTasks(tasks.map(task =>
-        task.id === editingTask.id ? editingTask : task
-      ));
+      setTasks(
+        tasks.map((task) => (task.id === editingTask.id ? editingTask : task))
+      );
       setShowEditModal(false);
       handleToast("Updated Task!", "success");
     } catch (error) {
@@ -137,23 +165,30 @@ const TaskManager: React.FC = () => {
     }
   };
 
-  const filteredTasks = tasks.filter(task =>
-    task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    task.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredTasks = tasks.filter(
+    (task) =>
+      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const toDoTasks = filteredTasks.filter(task =>
-    task.status === "To Do" && (selectedStatus === null || selectedStatus === "To Do")
+  const toDoTasks = filteredTasks.filter(
+    (task) =>
+      task.status === "To Do" &&
+      (selectedStatus === null || selectedStatus === "To Do")
   );
-  const ongoingTasks = filteredTasks.filter(task =>
-    task.status === "Ongoing" && (selectedStatus === null || selectedStatus === "Ongoing")
+  const ongoingTasks = filteredTasks.filter(
+    (task) =>
+      task.status === "Ongoing" &&
+      (selectedStatus === null || selectedStatus === "Ongoing")
   );
-  const completedTasks = filteredTasks.filter(task =>
-    task.status === "Complete" && (selectedStatus === null || selectedStatus === "Complete")
+  const completedTasks = filteredTasks.filter(
+    (task) =>
+      task.status === "Complete" &&
+      (selectedStatus === null || selectedStatus === "Complete")
   );
 
   const handleSidebarToggle = () => {
-    setIsSidebarOpen(prev => !prev);
+    setIsSidebarOpen((prev) => !prev);
   };
 
   return (
@@ -164,17 +199,19 @@ const TaskManager: React.FC = () => {
         isSidebarOpen={isSidebarOpen}
         onClose={handleSidebarToggle}
       />
-      <div className={`flex-1 min-w-0 ${isSidebarOpen ? 'md' : 'ml-0'}`}>
+      <div className={`flex-1 min-w-0 ${isSidebarOpen ? "md" : "ml-0"}`}>
         <div className="mx-auto p-4 md:p-16 pt-16">
           <div className="flex justify-between items-center mb-6">
             {!isSidebarOpen && (
-              <div className="flex items-center">
+              <div className="md:hidden w-full flex justify-center items-center">
                 <MenuButton className="sticky" onClick={handleSidebarToggle} />
-                <p className="font-bold text-2xl ml-2 md:hidden">NAANA</p>
+                <p className="font-bold text-2xl ml-2">NAANA</p>
               </div>
             )}
 
-            <h2 className="text-2xl font-semibold flex-1 text-center md:text-left hidden md:block">Active Tasks</h2>
+            <h2 className="text-2xl font-semibold flex-1 text-center md:text-left hidden md:block">
+              Active Tasks
+            </h2>
 
             <div className="hidden md:flex items-center gap-4 flex-1 justify-end">
               <input
@@ -207,12 +244,18 @@ const TaskManager: React.FC = () => {
             >
               Create Task
             </button>
-            <h2 className="text-2xl font-semibold text-center md:hidden">Active Tasks</h2>
+            <h2 className="text-2xl font-semibold md:hidden">
+              <AlarmClockCheck className="inline-block mr-2" />
+              Active Tasks
+            </h2>
           </div>
 
           {selectedStatus === "To Do" ? (
             <div>
-              <h3 className="text-xl font-semibold mb-4"><ClipboardCheck className="inline-block mr-2" />To Do</h3>
+              <h3 className="text-xl font-semibold mb-4">
+                <ClipboardCheck className="inline-block mr-2" />
+                To Do
+              </h3>
               {toDoTasks.length === 0 ? (
                 <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
                   <p className="text-gray-500">No tasks to do</p>
@@ -230,10 +273,12 @@ const TaskManager: React.FC = () => {
                       setEditingTask(task);
                       setShowEditModal(true);
                     }}
-                    onToggleButtons={(id) => setShowButtons(prev => ({
-                      ...prev,
-                      [id]: !prev[id]
-                    }))}
+                    onToggleButtons={(id) =>
+                      setShowButtons((prev) => ({
+                        ...prev,
+                        [id]: !prev[id],
+                      }))
+                    }
                     showButtons={showButtons}
                     status="To Do"
                   />
@@ -242,7 +287,10 @@ const TaskManager: React.FC = () => {
             </div>
           ) : selectedStatus === "Ongoing" ? (
             <div className="pt-3">
-              <h3 className="text-xl font-semibold mb-4"><Clock className="inline-block mr-2" />Ongoing</h3>
+              <h3 className="text-xl font-semibold mb-4">
+                <Clock className="inline-block mr-2" />
+                Ongoing
+              </h3>
               {ongoingTasks.length === 0 ? (
                 <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
                   <p className="text-gray-500">No ongoing tasks</p>
@@ -260,10 +308,12 @@ const TaskManager: React.FC = () => {
                       setEditingTask(task);
                       setShowEditModal(true);
                     }}
-                    onToggleButtons={(id) => setShowButtons(prev => ({
-                      ...prev,
-                      [id]: !prev[id]
-                    }))}
+                    onToggleButtons={(id) =>
+                      setShowButtons((prev) => ({
+                        ...prev,
+                        [id]: !prev[id],
+                      }))
+                    }
                     showButtons={showButtons}
                     status="Ongoing"
                   />
@@ -272,7 +322,10 @@ const TaskManager: React.FC = () => {
             </div>
           ) : selectedStatus === "Complete" ? (
             <div className="pt-3">
-              <h2 className="text-xl font-semibold mb-4"><CheckCircle className="inline-block mr-2" />Completed Tasks</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                <CheckCircle className="inline-block mr-2" />
+                Completed Tasks
+              </h2>
               {completedTasks.length === 0 ? (
                 <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
                   <p className="text-gray-500">No completed tasks</p>
@@ -290,10 +343,12 @@ const TaskManager: React.FC = () => {
                       setEditingTask(task);
                       setShowEditModal(false);
                     }}
-                    onToggleButtons={(id) => setShowButtons(prev => ({
-                      ...prev,
-                      [id]: !prev[id]
-                    }))}
+                    onToggleButtons={(id) =>
+                      setShowButtons((prev) => ({
+                        ...prev,
+                        [id]: !prev[id],
+                      }))
+                    }
                     showButtons={showButtons}
                     status="Complete"
                   />
@@ -309,7 +364,10 @@ const TaskManager: React.FC = () => {
               ) : (
                 <>
                   <div>
-                    <h3 className="text-xl font-semibold mb-4"><ClipboardCheck className="inline-block mr-2" />To Do</h3>
+                    <h3 className="text-xl font-semibold mb-4">
+                      <ClipboardCheck className="inline-block mr-2" />
+                      To Do
+                    </h3>
                     {toDoTasks.length > 0 ? (
                       <div className="space-y-4">
                         <TaskList
@@ -323,10 +381,12 @@ const TaskManager: React.FC = () => {
                             setEditingTask(task);
                             setShowEditModal(true);
                           }}
-                          onToggleButtons={(id) => setShowButtons(prev => ({
-                            ...prev,
-                            [id]: !prev[id]
-                          }))}
+                          onToggleButtons={(id) =>
+                            setShowButtons((prev) => ({
+                              ...prev,
+                              [id]: !prev[id],
+                            }))
+                          }
                           showButtons={showButtons}
                           status="To Do"
                         />
@@ -338,7 +398,10 @@ const TaskManager: React.FC = () => {
                     )}
                   </div>
                   <div className="pt-3">
-                    <h3 className="text-xl font-semibold mb-4"><Clock className="inline-block mr-2" />Ongoing</h3>
+                    <h3 className="text-xl font-semibold mb-4">
+                      <Clock className="inline-block mr-2" />
+                      Ongoing
+                    </h3>
                     {ongoingTasks.length > 0 ? (
                       <div className="space-y-4">
                         <TaskList
@@ -352,10 +415,12 @@ const TaskManager: React.FC = () => {
                             setEditingTask(task);
                             setShowEditModal(true);
                           }}
-                          onToggleButtons={(id) => setShowButtons(prev => ({
-                            ...prev,
-                            [id]: !prev[id]
-                          }))}
+                          onToggleButtons={(id) =>
+                            setShowButtons((prev) => ({
+                              ...prev,
+                              [id]: !prev[id],
+                            }))
+                          }
                           showButtons={showButtons}
                           status="Ongoing"
                         />
@@ -369,7 +434,10 @@ const TaskManager: React.FC = () => {
                 </>
               )}
               <div className="pt-3">
-                <h2 className="text-xl font-semibold mb-4"><CheckCircle className="inline-block mr-2" />Completed Tasks</h2>
+                <h2 className="text-2xl font-semibold mb-4">
+                  <CheckCircle className="inline-block mr-2" />
+                  Completed Tasks
+                </h2>
                 {completedTasks.length > 0 ? (
                   <div className="space-y-4">
                     <TaskList
@@ -383,10 +451,12 @@ const TaskManager: React.FC = () => {
                         setEditingTask(task);
                         setShowEditModal(false);
                       }}
-                      onToggleButtons={(id) => setShowButtons(prev => ({
-                        ...prev,
-                        [id]: !prev[id]
-                      }))}
+                      onToggleButtons={(id) =>
+                        setShowButtons((prev) => ({
+                          ...prev,
+                          [id]: !prev[id],
+                        }))
+                      }
                       showButtons={showButtons}
                       status="Complete"
                     />
@@ -431,7 +501,11 @@ const TaskManager: React.FC = () => {
             <Toast
               message={showToast.message}
               type={showToast.type}
-              onUndo={showToast.message === "Deleted Task!" ? handleUndoDelete : undefined}
+              onUndo={
+                showToast.message === "Deleted Task!"
+                  ? handleUndoDelete
+                  : undefined
+              }
             />
           )}
         </div>
