@@ -41,9 +41,9 @@ const TaskSidebar: React.FC<TaskSidebarProps> = ({
       </button>
 
       <div className="space-y-6">
-        <p className="font-bold flex justify-start pl-4 pt-5 pb-5 text-2xl">
-        <img src="crown2.svg" alt="Logo" className="mr-2 h-6 w-6" />
-        NAANA</p>
+        <p className="font-bold flex justify-start pl-4 pt-5 pb-5 text-2xl rubik-glitch-regular">
+        {/* <img src="Group1.svg" alt="Logo" className="mr-2 h-6 w-6 pt-2" /> */}
+        TaskFlow</p>
 
         <button
           onClick={() => setSelectedStatus(null)}

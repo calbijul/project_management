@@ -205,8 +205,8 @@ const TaskManager: React.FC = () => {
             {!isSidebarOpen && (
               <div className="md:hidden w-full flex justify-center items-center">
                 <MenuButton className="sticky" onClick={handleSidebarToggle} />
-                <img src="crown2.svg" alt="Logo" className="mr-2 h-6 w-6" />
-                <p className="font-bold text-2xl ml-2">NAANA</p>
+                {/* <img src="crown2.svg" alt="Logo" className="mr-2 h-6 w-6" /> */}
+                <p className="font-bold text-2xl ml-2 rubik-glitch-regular">TaskFlow</p>
               </div>
             )}
 
