@@ -45,6 +45,18 @@ const TaskManager: React.FC = () => {
     loadTasks();
   }, []);
 
+  // Responsive sidebar handling
+  useEffect(() => {
+    const handleResize = () => {
+      const isDesktop = window.innerWidth >= 768;
+      setIsSidebarOpen(isDesktop);
+    };
+
+    handleResize(); // Set initial state
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const validateTask = (task: { title: string; description: string }) => {
     if (!task.title.trim() && !task.description.trim()) {
       setError("Both fields are required");
@@ -185,9 +197,10 @@ const TaskManager: React.FC = () => {
         setSelectedStatus={setSelectedStatus}
         isSidebarOpen={isSidebarOpen}
         onClose={handleSidebarToggle}
+        className={isSidebarOpen ? "translate-x-0" : "-translate-x-full"}
       />
 
-      <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-0 md:ml-64' : 'ml-0'} flex justify-center`}>
+      <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'md:pl-64' : 'pl-0'}`}>
         <div className="mx-auto p-4 md:p-8 max-w-7xl w-full">
           <header className="mb-8 space-y-4">
             <div className="flex items-center justify-between md:justify-start gap-4">

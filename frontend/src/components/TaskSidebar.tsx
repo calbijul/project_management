@@ -8,6 +8,7 @@ interface TaskSidebarProps {
   setSelectedStatus: (status: "To Do" | "Ongoing" | "Complete" | null) => void;
   isSidebarOpen: boolean;
   onClose: () => void;
+  className?: string;
 }
 
 const backdropVariants = {
@@ -25,23 +26,29 @@ const TaskSidebar: React.FC<TaskSidebarProps> = ({
   setSelectedStatus,
   isSidebarOpen,
   onClose,
+  className,
 }) => {
   useEffect(() => {
-    const checkMobile = () => window.innerWidth < 768;
-    
-    const handleResize = () => {
-      if (isSidebarOpen && checkMobile()) {
+    const handleMobileResize = () => {
+      if (window.innerWidth >= 768 && isSidebarOpen) {
         onClose();
       }
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener('resize', handleMobileResize);
+    return () => window.removeEventListener('resize', handleMobileResize);
   }, [isSidebarOpen, onClose]);
 
   return (
     <>
-      <div className="hidden md:block relative z-40 w-64 min-h-screen p-4 bg-gray-50 border-r border-gray-200">
+      {/* Desktop Sidebar */}
+      <div
+        className={clsx(
+          "hidden md:block fixed left-0 top-0 z-40 w-64 h-screen p-4 bg-gray-50 border-r border-gray-200",
+          "transform transition-transform duration-300",
+          className
+        )}
+      >
         <SidebarContent
           selectedStatus={selectedStatus}
           setSelectedStatus={setSelectedStatus}
@@ -49,6 +56,7 @@ const TaskSidebar: React.FC<TaskSidebarProps> = ({
         />
       </div>
 
+      {/* Mobile Sidebar with animations */}
       <AnimatePresence>
         {isSidebarOpen && (
           <>
@@ -59,16 +67,16 @@ const TaskSidebar: React.FC<TaskSidebarProps> = ({
               animate="visible"
               exit="hidden"
               onClick={onClose}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.2 }}
             />
             
             <motion.div
-              className="fixed z-40 w-64 min-h-screen p-4 bg-gray-50 border-r border-gray-200 md:hidden"
+              className="fixed z-40 w-64 h-screen p-4 bg-gray-50 border-r border-gray-200 md:hidden"
               variants={sidebarVariants}
               initial="hidden"
               animate="visible"
               exit="hidden"
-              transition={{ duration: 0.3 }}
+              transition={{ type: "tween", duration: 0.2 }}
               onClick={(e) => e.stopPropagation()}
             >
               <SidebarContent
@@ -89,7 +97,8 @@ const SidebarContent: React.FC<Pick<TaskSidebarProps, 'selectedStatus' | 'setSel
   setSelectedStatus,
   onClose,
 }) => (
-  <div className="space-y-6">
+  <div className="relative h-full space-y-6">
+    {/* Mobile close button */}
     <button
       onClick={onClose}
       className="md:hidden absolute top-4 right-4 p-2 hover:bg-gray-200 rounded-full"
@@ -97,65 +106,69 @@ const SidebarContent: React.FC<Pick<TaskSidebarProps, 'selectedStatus' | 'setSel
       <X className="h-6 w-6 text-gray-600" />
     </button>
 
+    {/* Sidebar header */}
     <p className="font-bold flex justify-start pl-4 pt-5 pb-5 text-2xl rubik-glitch-regular">
       TaskFlow
     </p>
 
-    <button
-      onClick={() => setSelectedStatus(null)}
-      className={clsx(
-        "w-full px-4 py-2 text-left rounded-lg transition-colors",
-        {
-          "bg-gray-500 text-white hover:bg-gray-600": selectedStatus === null,
-          "hover:bg-gray-200": selectedStatus !== null,
-        }
-      )}
-    >
-      <List className="inline-block mr-2" />
-      All
-    </button>
+    {/* Status filters */}
+    <div className="space-y-4">
+      <button
+        onClick={() => setSelectedStatus(null)}
+        className={clsx(
+          "w-full px-4 py-2 text-left rounded-lg transition-colors flex items-center",
+          {
+            "bg-gray-500 text-white hover:bg-gray-600": selectedStatus === null,
+            "hover:bg-gray-200 text-gray-700": selectedStatus !== null,
+          }
+        )}
+      >
+        <List className="mr-2 h-5 w-5" />
+        All Tasks
+      </button>
 
-    <button
-      onClick={() => setSelectedStatus(selectedStatus === "To Do" ? null : "To Do")}
-      className={clsx(
-        "w-full px-4 py-2 text-left rounded-lg transition-colors",
-        {
-          "bg-blue-500 text-white hover:bg-blue-600": selectedStatus === "To Do",
-          "hover:bg-blue-200": selectedStatus !== "To Do",
-        }
-      )}
-    >
-      <ClipboardCheck className="inline-block mr-2" />
-      To Do
-    </button>
+      <button
+        onClick={() => setSelectedStatus(selectedStatus === "To Do" ? null : "To Do")}
+        className={clsx(
+          "w-full px-4 py-2 text-left rounded-lg transition-colors flex items-center",
+          {
+            "bg-blue-500 text-white hover:bg-blue-600": selectedStatus === "To Do",
+            "hover:bg-blue-200 text-blue-700": selectedStatus !== "To Do",
+          }
+        )}
+      >
+        <ClipboardCheck className="mr-2 h-5 w-5" />
+        To Do
+      </button>
 
-    <button
-      onClick={() => setSelectedStatus(selectedStatus === "Ongoing" ? null : "Ongoing")}
-      className={clsx(
-        "w-full px-4 py-2 text-left rounded-lg transition-colors",
-        {
-          "bg-yellow-500 text-white hover:bg-yellow-600": selectedStatus === "Ongoing",
-          "hover:bg-yellow-200": selectedStatus !== "Ongoing",
-        }
-      )}
-    >
-      <Clock className="inline-block mr-2" />
-      Ongoing
-    </button>
+      <button
+        onClick={() => setSelectedStatus(selectedStatus === "Ongoing" ? null : "Ongoing")}
+        className={clsx(
+          "w-full px-4 py-2 text-left rounded-lg transition-colors flex items-center",
+          {
+            "bg-yellow-500 text-white hover:bg-yellow-600": selectedStatus === "Ongoing",
+            "hover:bg-yellow-200 text-yellow-700": selectedStatus !== "Ongoing",
+          }
+        )}
+      >
+        <Clock className="mr-2 h-5 w-5" />
+        Ongoing
+      </button>
 
-    <button
-      onClick={() => setSelectedStatus(selectedStatus === "Complete" ? null : "Complete")}
-      className={clsx(
-        "w-full px-4 py-2 text-left rounded-lg transition-colors",
-        {
-          "bg-green-500 text-white hover:bg-green-600": selectedStatus === "Complete",
-          "hover:bg-green-200": selectedStatus !== "Complete",
-        }
-      )}
-    >
-      <CheckCircle className="inline-block mr-2" />
-      Complete
-    </button>
+      <button
+        onClick={() => setSelectedStatus(selectedStatus === "Complete" ? null : "Complete")}
+        className={clsx(
+          "w-full px-4 py-2 text-left rounded-lg transition-colors flex items-center",
+          {
+            "bg-green-500 text-white hover:bg-green-600": selectedStatus === "Complete",
+            "hover:bg-green-200 text-green-700": selectedStatus !== "Complete",
+          }
+        )}
+      >
+        <CheckCircle className="mr-2 h-5 w-5" />
+        Complete
+      </button>
+    </div>
   </div>
 );
 
