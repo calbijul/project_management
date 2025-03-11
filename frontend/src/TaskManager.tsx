@@ -16,8 +16,8 @@ import {
 } from "./components/Modals";
 import Toast from "./components/Toast";
 import {
-  AlarmClockCheck,
-  CheckCircle,
+  // AlarmClockCheck,
+  // CheckCircle,
   ClipboardCheck,
   Clock,
 } from "lucide-react";
@@ -245,9 +245,10 @@ const TaskManager: React.FC = () => {
             >
               Create Task
             </button>
-            <h2 className="text-2xl font-semibold md:hidden">
-              <AlarmClockCheck className="inline-block mr-2" />
+            <h2 className="text-2xl pt-2 font-semibold md:hidden">
+              {/* <AlarmClockCheck className="inline-block mr-2" /> */}
               Active Tasks
+              <span><div className="w-full mt-2 border border-gray-200"></div></span>
             </h2>
           </div>
 
@@ -324,9 +325,11 @@ const TaskManager: React.FC = () => {
           ) : selectedStatus === "Complete" ? (
             <div className="pt-3">
               <h2 className="text-xl font-semibold mb-4">
-                <CheckCircle className="inline-block mr-2" />
+                {/* <CheckCircle className="inline-block mr-2" /> */}
                 Completed Tasks
+        
               </h2>
+             
               {completedTasks.length === 0 ? (
                 <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
                   <p className="text-gray-500">No completed tasks</p>
@@ -436,8 +439,9 @@ const TaskManager: React.FC = () => {
               )}
               <div className="pt-3">
                 <h2 className="text-2xl font-semibold mb-4">
-                  <CheckCircle className="inline-block mr-2" />
+                  {/* <CheckCircle className="inline-block mr-2" /> */}
                   Completed Tasks
+                  <span><div className="w-full mt-2 border border-gray-200"></div></span>
                 </h2>
                 {completedTasks.length > 0 ? (
                   <div className="space-y-4">
