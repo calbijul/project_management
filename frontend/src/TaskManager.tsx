@@ -9,18 +9,8 @@ import {
 } from "./api";
 import TaskSidebar from "./components/TaskSidebar";
 import TaskList from "./components/TaskList";
-import {
-  AddTaskModal,
-  EditTaskModal,
-  DeleteTaskModal,
-} from "./components/Modals";
+import { AddTaskModal, EditTaskModal, DeleteTaskModal } from "./components/Modals";
 import Toast from "./components/Toast";
-import {
-  // AlarmClockCheck,
-  // CheckCircle,
-  ClipboardCheck,
-  Clock,
-} from "lucide-react";
 import MenuButton from "./assets/components/menuButton";
 
 const TaskManager: React.FC = () => {
@@ -30,9 +20,7 @@ const TaskManager: React.FC = () => {
     description: "",
     status: "To Do",
   });
-  const [showButtons, setShowButtons] = useState<{ [key: number]: boolean }>(
-    {}
-  );
+  const [showButtons, setShowButtons] = useState<{ [key: number]: boolean }>({});
   const [showAddTaskForm, setShowAddTaskForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -40,26 +28,16 @@ const TaskManager: React.FC = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showToast, setShowToast] = useState<ToastType>({
-    message: "",
-    type: "success",
-  });
+  const [showToast, setShowToast] = useState<ToastType>({ message: "", type: "success" });
   const [deletedTask, setDeletedTask] = useState<Task | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<
-    "To Do" | "Ongoing" | "Complete" | null
-  >(null);
+  const [selectedStatus, setSelectedStatus] = useState<"To Do" | "Ongoing" | "Complete" | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
 
   useEffect(() => {
     const loadTasks = async () => {
       try {
         const data = await fetchTasks();
-        setTasks(
-          data.sort(
-            (a: Task, b: Task) =>
-              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          )
-        );
+        setTasks(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
       } catch (error) {
         handleToast(`Error fetching tasks: ${error}`, "error");
       }
@@ -108,15 +86,8 @@ const TaskManager: React.FC = () => {
   const handleStatusUpdate = async (id: number, status: Task["status"]) => {
     try {
       await updateTaskStatus(id, status);
-      const updatedTasks = tasks.map((task) =>
-        task.id === id ? { ...task, status } : task
-      );
-      setTasks(
-        updatedTasks.sort(
-          (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        )
-      );
+      const updatedTasks = tasks.map((task) => (task.id === id ? { ...task, status } : task));
+      setTasks(updatedTasks.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
       if (status === "Complete") handleToast("Completed Task!", "success");
     } catch (error) {
       handleToast(`Error updating status: ${error}`, "error");
@@ -143,9 +114,7 @@ const TaskManager: React.FC = () => {
         title: editingTask.title,
         description: editingTask.description,
       });
-      setTasks(
-        tasks.map((task) => (task.id === editingTask.id ? editingTask : task))
-      );
+      setTasks(tasks.map((task) => (task.id === editingTask.id ? editingTask : task)));
       setShowEditModal(false);
       handleToast("Updated Task!", "success");
     } catch (error) {
@@ -165,315 +134,178 @@ const TaskManager: React.FC = () => {
     }
   };
 
-  const filteredTasks = tasks.filter(
-    (task) =>
+  const filteredTasks = tasks.filter((task) => {
+    const matchesSearch =
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      task.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      task.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-  const toDoTasks = filteredTasks.filter(
-    (task) =>
-      task.status === "To Do" &&
-      (selectedStatus === null || selectedStatus === "To Do")
-  );
-  const ongoingTasks = filteredTasks.filter(
-    (task) =>
-      task.status === "Ongoing" &&
-      (selectedStatus === null || selectedStatus === "Ongoing")
-  );
-  const completedTasks = filteredTasks.filter(
-    (task) =>
-      task.status === "Complete" &&
-      (selectedStatus === null || selectedStatus === "Complete")
-  );
+    const matchesStatus = selectedStatus ? task.status === selectedStatus : true;
 
-  const handleSidebarToggle = () => {
-    setIsSidebarOpen((prev) => !prev);
+    return matchesSearch && matchesStatus;
+  });
+
+  const statusColors = {
+    "To Do": "bg-blue-500",
+    Ongoing: "bg-yellow-500",
+    Complete: "bg-green-500",
   };
 
+  const commonListProps = {
+    onUpdateStatus: handleStatusUpdate,
+    onDelete: (id: number) => {
+      setTaskToDelete(id);
+      setShowDeleteModal(true);
+    },
+    onEdit: (task: Task) => {
+      setEditingTask(task);
+      setShowEditModal(true);
+    },
+    onToggleButtons: (id: number) => setShowButtons((prev) => ({ ...prev, [id]: !prev[id] })),
+    showButtons,
+  };
+
+  const renderTaskList = (tasks: Task[]) => (
+    tasks.length > 0 ? (
+      <TaskList
+        tasks={tasks}
+        {...commonListProps}
+        status={selectedStatus || "To Do"}
+      />
+    ) : (
+      <EmptyState message={`No ${selectedStatus?.toLowerCase() || ""} tasks`} />
+    )
+  );
+
+  const handleSidebarToggle = () => setIsSidebarOpen((prev) => !prev);
+
   return (
-    <div className="flex ">
+    <div className="flex min-h-screen bg-gray-50">
       <TaskSidebar
         selectedStatus={selectedStatus}
         setSelectedStatus={setSelectedStatus}
         isSidebarOpen={isSidebarOpen}
         onClose={handleSidebarToggle}
       />
-      <div className={`flex-1 min-w-0 ${isSidebarOpen ? "md" : "ml-0"}`}>
-        <div className="mx-auto p-4 md:p-16 pt-16">
-          <div className="flex justify-between items-center mb-6">
-            {!isSidebarOpen && (
-              <div className="md:hidden w-full flex justify-center items-center">
-                <MenuButton className="sticky" onClick={handleSidebarToggle} />
-                {/* <img src="crown2.svg" alt="Logo" className="mr-2 h-6 w-6" /> */}
-                <p className="font-bold text-2xl ml-2 rubik-glitch-regular">TaskFlow</p>
+
+      <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-0 md:ml-64' : 'ml-0'} flex justify-center`}>
+        <div className="mx-auto p-4 md:p-8 max-w-7xl w-full">
+          <header className="mb-8 space-y-4">
+            <div className="flex items-center justify-between md:justify-start gap-4">
+              {!isSidebarOpen && (
+                <div className="md:hidden">
+                  <MenuButton onClick={handleSidebarToggle} className={""} />
+                </div>
+              )}
+              <h1 className="text-2xl font-bold text-gray-900 hidden md:block">Task Dashboard</h1>
+
+              <div className="flex-1 max-w-xl">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search tasks..."
+                    className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <svg
+                    className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </div>
               </div>
-            )}
 
-            <h2 className="text-2xl font-semibold flex-1 text-center md:text-left hidden md:block">
-              Active Tasks
-            </h2>
-
-            <div className="hidden md:flex items-center gap-4 flex-1 justify-end">
-              <input
-                type="text"
-                placeholder="Search tasks..."
-                className="w-full md:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
               <button
                 onClick={() => setShowAddTaskForm(true)}
-                className="py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
               >
-                Create Task
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                <span className="hidden md:inline">New Task</span>
               </button>
             </div>
-          </div>
+          </header>
 
-          <div className="md:hidden flex flex-col gap-4 mb-6">
-            <input
-              type="text"
-              placeholder="Search tasks..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button
-              onClick={() => setShowAddTaskForm(true)}
-              className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
-            >
-              Create Task
-            </button>
-            <h2 className="text-2xl pt-2 font-semibold md:hidden">
-              {/* <AlarmClockCheck className="inline-block mr-2" /> */}
-              Active Tasks
-              <span><div className="w-full mt-2 border border-gray-200"></div></span>
-            </h2>
-          </div>
-
-          {selectedStatus === "To Do" ? (
-            <div>
-              <h3 className="text-xl font-semibold mb-4">
-                <ClipboardCheck className="inline-block mr-2" />
-                To Do
-              </h3>
-              {toDoTasks.length === 0 ? (
-                <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-                  <p className="text-gray-500">No tasks to do</p>
+          <div className="grid gap-6 md:gap-8">
+            {selectedStatus ? (
+              <section>
+                <div className="flex items-center gap-3 mb-4 p-2 bg-white rounded-lg">
+                  <div className={`w-2 h-8 rounded-full ${statusColors[selectedStatus || "To Do"]}`} />
+                  <h3 className="text-lg font-semibold text-gray-900">{selectedStatus || "To Do"} Tasks</h3>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  <TaskList
-                    tasks={toDoTasks}
-                    onUpdateStatus={handleStatusUpdate}
-                    onDelete={(id) => {
-                      setTaskToDelete(id);
-                      setShowDeleteModal(true);
-                    }}
-                    onEdit={(task) => {
-                      setEditingTask(task);
-                      setShowEditModal(true);
-                    }}
-                    onToggleButtons={(id) =>
-                      setShowButtons((prev) => ({
-                        ...prev,
-                        [id]: !prev[id],
-                      }))
-                    }
-                    showButtons={showButtons}
-                    status="To Do"
-                  />
-                </div>
-              )}
-            </div>
-          ) : selectedStatus === "Ongoing" ? (
-            <div className="pt-3">
-              <h3 className="text-xl font-semibold mb-4">
-                <Clock className="inline-block mr-2" />
-                Ongoing
-              </h3>
-              {ongoingTasks.length === 0 ? (
-                <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-                  <p className="text-gray-500">No ongoing tasks</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <TaskList
-                    tasks={ongoingTasks}
-                    onUpdateStatus={handleStatusUpdate}
-                    onDelete={(id) => {
-                      setTaskToDelete(id);
-                      setShowDeleteModal(true);
-                    }}
-                    onEdit={(task) => {
-                      setEditingTask(task);
-                      setShowEditModal(true);
-                    }}
-                    onToggleButtons={(id) =>
-                      setShowButtons((prev) => ({
-                        ...prev,
-                        [id]: !prev[id],
-                      }))
-                    }
-                    showButtons={showButtons}
-                    status="Ongoing"
-                  />
-                </div>
-              )}
-            </div>
-          ) : selectedStatus === "Complete" ? (
-            <div className="pt-3">
-              <h2 className="text-xl font-semibold mb-4">
-                {/* <CheckCircle className="inline-block mr-2" /> */}
-                Completed Tasks
-        
-              </h2>
-             
-              {completedTasks.length === 0 ? (
-                <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-                  <p className="text-gray-500">No completed tasks</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <TaskList
-                    tasks={completedTasks}
-                    onUpdateStatus={handleStatusUpdate}
-                    onDelete={(id) => {
-                      setTaskToDelete(id);
-                      setShowDeleteModal(true);
-                    }}
-                    onEdit={(task) => {
-                      setEditingTask(task);
-                      setShowEditModal(false);
-                    }}
-                    onToggleButtons={(id) =>
-                      setShowButtons((prev) => ({
-                        ...prev,
-                        [id]: !prev[id],
-                      }))
-                    }
-                    showButtons={showButtons}
-                    status="Complete"
-                  />
-                </div>
-              )}
-            </div>
-          ) : (
-            <>
-              {toDoTasks.length === 0 && ongoingTasks.length === 0 ? (
-                <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-                  <p className="text-gray-500">No active task available</p>
-                </div>
-              ) : (
-                <>
-                  <div>
-                    <h3 className="text-xl font-semibold mb-4">
-                      <ClipboardCheck className="inline-block mr-2" />
-                      To Do
-                    </h3>
-                    {toDoTasks.length > 0 ? (
-                      <div className="space-y-4">
-                        <TaskList
-                          tasks={toDoTasks}
-                          onUpdateStatus={handleStatusUpdate}
-                          onDelete={(id) => {
-                            setTaskToDelete(id);
-                            setShowDeleteModal(true);
-                          }}
-                          onEdit={(task) => {
-                            setEditingTask(task);
-                            setShowEditModal(true);
-                          }}
-                          onToggleButtons={(id) =>
-                            setShowButtons((prev) => ({
-                              ...prev,
-                              [id]: !prev[id],
-                            }))
-                          }
-                          showButtons={showButtons}
-                          status="To Do"
-                        />
-                      </div>
-                    ) : (
-                      <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-                        <p className="text-gray-500">No tasks to do</p>
-                      </div>
-                    )}
+                {renderTaskList(filteredTasks)}
+              </section>
+            ) : (
+              <>
+                <section>
+                  <div className="flex items-center gap-3 mb-4 p-2 bg-white rounded-lg">
+                    <div className="w-2 h-8 rounded-full bg-blue-500" />
+                    <h3 className="text-lg font-semibold text-gray-900">To Do</h3>
                   </div>
-                  <div className="pt-3">
-                    <h3 className="text-xl font-semibold mb-4">
-                      <Clock className="inline-block mr-2" />
-                      Ongoing
-                    </h3>
-                    {ongoingTasks.length > 0 ? (
-                      <div className="space-y-4">
-                        <TaskList
-                          tasks={ongoingTasks}
-                          onUpdateStatus={handleStatusUpdate}
-                          onDelete={(id) => {
-                            setTaskToDelete(id);
-                            setShowDeleteModal(true);
-                          }}
-                          onEdit={(task) => {
-                            setEditingTask(task);
-                            setShowEditModal(true);
-                          }}
-                          onToggleButtons={(id) =>
-                            setShowButtons((prev) => ({
-                              ...prev,
-                              [id]: !prev[id],
-                            }))
-                          }
-                          showButtons={showButtons}
-                          status="Ongoing"
-                        />
-                      </div>
-                    ) : (
-                      <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-                        <p className="text-gray-500">No ongoing tasks</p>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-              <div className="pt-3">
-                <h2 className="text-2xl font-semibold mb-4">
-                  {/* <CheckCircle className="inline-block mr-2" /> */}
-                  Completed Tasks
-                  <span><div className="w-full mt-2 border border-gray-200"></div></span>
-                </h2>
-                {completedTasks.length > 0 ? (
-                  <div className="space-y-4">
+                  {filteredTasks.filter(t => t.status === "To Do").length > 0 ? (
                     <TaskList
-                      tasks={completedTasks}
-                      onUpdateStatus={handleStatusUpdate}
-                      onDelete={(id) => {
-                        setTaskToDelete(id);
-                        setShowDeleteModal(true);
-                      }}
-                      onEdit={(task) => {
-                        setEditingTask(task);
-                        setShowEditModal(false);
-                      }}
-                      onToggleButtons={(id) =>
-                        setShowButtons((prev) => ({
-                          ...prev,
-                          [id]: !prev[id],
-                        }))
-                      }
-                      showButtons={showButtons}
+                      tasks={filteredTasks.filter(t => t.status === "To Do")}
+                      {...commonListProps}
+                      status="To Do"
+                    />
+                  ) : (
+                    <EmptyState message="No tasks to do" />
+                  )}
+                </section>
+
+                <section>
+                  <div className="flex items-center gap-3 mb-4 p-2 bg-white rounded-lg">
+                    <div className="w-2 h-8 rounded-full bg-yellow-500" />
+                    <h3 className="text-lg font-semibold text-gray-900">Ongoing</h3>
+                  </div>
+                  {filteredTasks.filter(t => t.status === "Ongoing").length > 0 ? (
+                    <TaskList
+                      tasks={filteredTasks.filter(t => t.status === "Ongoing")}
+                      {...commonListProps}
+                      status="Ongoing"
+                    />
+                  ) : (
+                    <EmptyState message="No ongoing tasks" />
+                  )}
+                </section>
+
+                <section>
+                  <div className="flex items-center gap-3 mb-4 p-2 bg-white rounded-lg">
+                    <div className="w-2 h-8 rounded-full bg-green-500" />
+                    <h3 className="text-lg font-semibold text-gray-900">Completed</h3>
+                  </div>
+                  {filteredTasks.filter(t => t.status === "Complete").length > 0 ? (
+                    <TaskList
+                      tasks={filteredTasks.filter(t => t.status === "Complete")}
+                      {...commonListProps}
                       status="Complete"
                     />
-                  </div>
-                ) : (
-                  <div className="border border-gray-200 p-4 rounded-lg shadow-sm bg-white">
-                    <p className="text-gray-500">No completed tasks</p>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
+                  ) : (
+                    <EmptyState message="No completed tasks" />
+                  )}
+                </section>
+              </>
+            )}
+          </div>
 
           {showAddTaskForm && (
             <AddTaskModal
@@ -485,7 +317,7 @@ const TaskManager: React.FC = () => {
             />
           )}
 
-          {showEditModal && (
+          {showEditModal && editingTask && (
             <EditTaskModal
               editingTask={editingTask}
               setEditingTask={setEditingTask}
@@ -495,9 +327,9 @@ const TaskManager: React.FC = () => {
             />
           )}
 
-          {showDeleteModal && (
+          {showDeleteModal && taskToDelete && (
             <DeleteTaskModal
-              onConfirm={() => taskToDelete && handleDelete(taskToDelete)}
+              onConfirm={() => handleDelete(taskToDelete)}
               onCancel={() => setShowDeleteModal(false)}
             />
           )}
@@ -506,17 +338,32 @@ const TaskManager: React.FC = () => {
             <Toast
               message={showToast.message}
               type={showToast.type}
-              onUndo={
-                showToast.message === "Deleted Task!"
-                  ? handleUndoDelete
-                  : undefined
-              }
+              onUndo={showToast.message === "Deleted Task!" ? handleUndoDelete : undefined}
             />
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 };
+
+const EmptyState: React.FC<{ message: string }> = ({ message }) => (
+  <div className="p-6 bg-white rounded-xl border border-dashed border-gray-200 text-center">
+    <svg
+      className="mx-auto h-12 w-12 text-gray-400"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      />
+    </svg>
+    <p className="mt-2 text-gray-500">{message}</p>
+  </div>
+);
 
 export default TaskManager;
