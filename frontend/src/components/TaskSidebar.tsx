@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import { CheckCircle, ClipboardCheck, Clock, List, X } from "lucide-react";
@@ -28,20 +28,8 @@ const TaskSidebar: React.FC<TaskSidebarProps> = ({
   onClose,
   className,
 }) => {
-  useEffect(() => {
-    const handleMobileResize = () => {
-      if (window.innerWidth >= 768 && isSidebarOpen) {
-        onClose();
-      }
-    };
-
-    window.addEventListener('resize', handleMobileResize);
-    return () => window.removeEventListener('resize', handleMobileResize);
-  }, [isSidebarOpen, onClose]);
-
   return (
     <>
-      {/* Desktop Sidebar */}
       <div
         className={clsx(
           "hidden md:block fixed left-0 top-0 z-40 w-64 h-screen p-4 bg-gray-50 border-r border-gray-200",
@@ -56,7 +44,6 @@ const TaskSidebar: React.FC<TaskSidebarProps> = ({
         />
       </div>
 
-      {/* Mobile Sidebar with animations */}
       <AnimatePresence>
         {isSidebarOpen && (
           <>
@@ -98,7 +85,6 @@ const SidebarContent: React.FC<Pick<TaskSidebarProps, 'selectedStatus' | 'setSel
   onClose,
 }) => (
   <div className="relative h-full space-y-6">
-    {/* Mobile close button */}
     <button
       onClick={onClose}
       className="md:hidden absolute top-4 right-4 p-2 hover:bg-gray-200 rounded-full"
@@ -106,12 +92,10 @@ const SidebarContent: React.FC<Pick<TaskSidebarProps, 'selectedStatus' | 'setSel
       <X className="h-6 w-6 text-gray-600" />
     </button>
 
-    {/* Sidebar header */}
     <p className="font-bold flex justify-start pl-4 pt-5 pb-5 text-2xl rubik-glitch-regular">
       TaskFlow
     </p>
 
-    {/* Status filters */}
     <div className="space-y-4">
       <button
         onClick={() => setSelectedStatus(null)}
@@ -133,7 +117,7 @@ const SidebarContent: React.FC<Pick<TaskSidebarProps, 'selectedStatus' | 'setSel
           "w-full px-4 py-2 text-left rounded-lg transition-colors flex items-center",
           {
             "bg-blue-500 text-white hover:bg-blue-600": selectedStatus === "To Do",
-            "hover:bg-blue-200 text-blue-700": selectedStatus !== "To Do",
+            "hover:bg-blue-200 ": selectedStatus !== "To Do",
           }
         )}
       >
@@ -147,7 +131,7 @@ const SidebarContent: React.FC<Pick<TaskSidebarProps, 'selectedStatus' | 'setSel
           "w-full px-4 py-2 text-left rounded-lg transition-colors flex items-center",
           {
             "bg-yellow-500 text-white hover:bg-yellow-600": selectedStatus === "Ongoing",
-            "hover:bg-yellow-200 text-yellow-700": selectedStatus !== "Ongoing",
+            "hover:bg-yellow-200 ": selectedStatus !== "Ongoing",
           }
         )}
       >
@@ -161,7 +145,7 @@ const SidebarContent: React.FC<Pick<TaskSidebarProps, 'selectedStatus' | 'setSel
           "w-full px-4 py-2 text-left rounded-lg transition-colors flex items-center",
           {
             "bg-green-500 text-white hover:bg-green-600": selectedStatus === "Complete",
-            "hover:bg-green-200 text-green-700": selectedStatus !== "Complete",
+            "hover:bg-green-200 ": selectedStatus !== "Complete",
           }
         )}
       >

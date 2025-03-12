@@ -45,14 +45,14 @@ const TaskManager: React.FC = () => {
     loadTasks();
   }, []);
 
-  // Responsive sidebar handling
+
   useEffect(() => {
     const handleResize = () => {
       const isDesktop = window.innerWidth >= 768;
       setIsSidebarOpen(isDesktop);
     };
 
-    handleResize(); // Set initial state
+    handleResize(); 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -203,7 +203,7 @@ const TaskManager: React.FC = () => {
       <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'md:pl-64' : 'pl-0'}`}>
         <div className="mx-auto p-4 md:p-8 max-w-7xl w-full">
           <header className="mb-8 space-y-4">
-            <div className="flex items-center justify-between md:justify-start gap-4">
+            <div className="flex items-center justify-between md:justify-center gap-10 ">
               {!isSidebarOpen && (
                 <div className="md:hidden">
                   <MenuButton onClick={handleSidebarToggle} className={""} />
@@ -216,7 +216,7 @@ const TaskManager: React.FC = () => {
                   <input
                     type="text"
                     placeholder="Search tasks..."
-                    className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
