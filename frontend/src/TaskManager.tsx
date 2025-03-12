@@ -32,6 +32,15 @@ const TaskManager: React.FC = () => {
   const [deletedTask, setDeletedTask] = useState<Task | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<"To Do" | "Ongoing" | "Complete" | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 0);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const loadTasks = async () => {
@@ -45,14 +54,13 @@ const TaskManager: React.FC = () => {
     loadTasks();
   }, []);
 
-
   useEffect(() => {
     const handleResize = () => {
       const isDesktop = window.innerWidth >= 768;
       setIsSidebarOpen(isDesktop);
     };
 
-    handleResize(); 
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -206,7 +214,12 @@ const TaskManager: React.FC = () => {
             <div className="flex items-center justify-between md:justify-center gap-10 ">
               {!isSidebarOpen && (
                 <div className="md:hidden">
-                  <MenuButton onClick={handleSidebarToggle} className={""} />
+                  <MenuButton 
+                    onClick={handleSidebarToggle} 
+                    className={`transition-opacity duration-300 ${
+                      isScrolled ? "opacity-50" : "opacity-100"
+                    }`}
+                  />
                 </div>
               )}
               <h1 className="text-2xl font-bold text-gray-900 hidden md:block">Task Dashboard</h1>
