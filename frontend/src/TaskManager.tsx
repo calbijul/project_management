@@ -177,8 +177,10 @@ const TaskManager: React.FC = () => {
       setShowDeleteModal(true);
     },
     onEdit: (task: Task) => {
-      setEditingTask(task);
-      setShowEditModal(true);
+      if (task.status !== "Complete") {
+        setEditingTask(task);
+        setShowEditModal(true);
+      }
     },
     onToggleButtons: (id: number) => setShowButtons((prev) => ({ ...prev, [id]: !prev[id] })),
     showButtons,
