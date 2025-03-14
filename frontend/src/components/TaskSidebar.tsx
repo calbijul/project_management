@@ -12,8 +12,8 @@ interface TaskSidebarProps {
 }
 
 const backdropVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 },
+  hidden: { opacity: 0, backdropFilter: 'blur(0px)' },
+  visible: { opacity: 1, backdropFilter: 'blur(2.5px)' },
 };
 
 const sidebarVariants = {
@@ -102,8 +102,8 @@ const SidebarContent: React.FC<Pick<TaskSidebarProps, 'selectedStatus' | 'setSel
         className={clsx(
           "w-full px-4 py-2 text-left rounded-lg transition-colors flex items-center",
           {
-            "bg-gray-500 text-white hover:bg-gray-600": selectedStatus === null,
-            "hover:bg-gray-200 text-gray-700": selectedStatus !== null,
+            "bg-gray-500 text-white hover:bg-gray-600 ": selectedStatus === null,
+            "hover:bg-gray-200  hover:border-2 hover:border-gray-600 hover:text-gray-600": selectedStatus !== null,
           }
         )}
       >
@@ -116,8 +116,8 @@ const SidebarContent: React.FC<Pick<TaskSidebarProps, 'selectedStatus' | 'setSel
         className={clsx(
           "w-full px-4 py-2 text-left rounded-lg transition-colors flex items-center",
           {
-            "bg-blue-500 text-white hover:bg-blue-600": selectedStatus === "To Do",
-            "hover:bg-blue-200 ": selectedStatus !== "To Do",
+            "bg-blue-500 text-white hover:bg-blue-600 ": selectedStatus === "To Do",
+            "hover:bg-blue-200 hover:border-2 hover:border-blue-600 hover:text-blue-600": selectedStatus !== "To Do",
           }
         )}
       >
@@ -131,7 +131,7 @@ const SidebarContent: React.FC<Pick<TaskSidebarProps, 'selectedStatus' | 'setSel
           "w-full px-4 py-2 text-left rounded-lg transition-colors flex items-center",
           {
             "bg-yellow-500 text-white hover:bg-yellow-600": selectedStatus === "Ongoing",
-            "hover:bg-yellow-200 ": selectedStatus !== "Ongoing",
+            "hover:bg-yellow-200 hover:border-2 hover:border-yellow-600 hover:text-yellow-600": selectedStatus !== "Ongoing",
           }
         )}
       >
@@ -145,7 +145,7 @@ const SidebarContent: React.FC<Pick<TaskSidebarProps, 'selectedStatus' | 'setSel
           "w-full px-4 py-2 text-left rounded-lg transition-colors flex items-center",
           {
             "bg-green-500 text-white hover:bg-green-600": selectedStatus === "Complete",
-            "hover:bg-green-200 ": selectedStatus !== "Complete",
+            "hover:bg-green-200 hover:border-2 hover:border-green-600 hover:text-green-600": selectedStatus !== "Complete",
           }
         )}
       >

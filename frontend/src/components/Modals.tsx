@@ -3,9 +3,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Task } from "../types";
 
 const backdropVariants = {
-  visible: { opacity: 1 },
-  hidden: { opacity: 0 },
-  exit: { opacity: 0 }, 
+  visible: { opacity: 1, backdropFilter: 'blur(2.5px)' },
+  hidden: { opacity: 0, backdropFilter: 'blur(0)' },
+  exit: { opacity: 0, backdropFilter: 'blur(0)' }, 
 };
 
 const modalVariants = {
@@ -28,7 +28,8 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({ children, onClose }) => (
       animate="visible"
       exit="exit"
       variants={backdropVariants}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: 0.4 }}
+
     >
       <motion.div
         className="bg-white rounded-lg shadow-xl w-full max-w-lg"
@@ -37,7 +38,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({ children, onClose }) => (
         initial="hidden"
         animate="visible"
         exit="exit"
-        transition={{ duration: 0.3 }} 
+        transition={{ duration: 0.4 }} 
       >
         {children}
       </motion.div>
