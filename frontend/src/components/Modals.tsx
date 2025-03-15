@@ -28,7 +28,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({ children, onClose }) => (
       animate="visible"
       exit="exit"
       variants={backdropVariants}
-      transition={{ duration: 0.4 }}
+      transition={{ duration: 0.3 }}
 
     >
       <motion.div
@@ -38,7 +38,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({ children, onClose }) => (
         initial="hidden"
         animate="visible"
         exit="exit"
-        transition={{ duration: 0.4 }} 
+        transition={{ duration: 0.3 }} 
       >
         {children}
       </motion.div>
