@@ -13,7 +13,7 @@ interface TaskSidebarProps {
 
 const backdropVariants = {
   hidden: { opacity: 0, backdropFilter: 'blur(0px)' },
-  visible: { opacity: 1, backdropFilter: 'blur(2.5px)' },
+  visible: { opacity: 1, backdropFilter: 'blur(2.0px)' },
 };
 
 const sidebarVariants = {
